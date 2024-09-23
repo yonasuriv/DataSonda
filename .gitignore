@@ -1,0 +1,15 @@
+modules/visor/.venv/
+modules/visor/.idea/
+modules/visor/__pycache__/
+modules/visor/*.pyc
+modules/visor/.visor.json
+modules/visor/visor/data/cheats/.obsidian/
+modules/visor/cheats/.obsidian/
+modules/visor/cheats/visor/.obsidian/
+modules/visor/visor.egg-info/
+modules/visor/visor_cli.egg-info/
+modules/visor/build/
+modules/visor/dist/
+modules/visor/Pipfile.lock
+modules/visor/Pipfile
+
