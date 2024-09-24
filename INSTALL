@@ -1,5 +1,11 @@
 #!/bin/bash
 
+RT='\033[0m'
+LB='\n'
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+CYAN="\033[0;36m"
+
 # Define variables
 REPO_URL="https://github.com/yonasuriv/sysdd"
 SHARED_DIR="/usr/share/sysdd"
@@ -8,38 +14,41 @@ BIN_NAME="sysdd"
 TEMP_DIR=$(mktemp -d)
 
 # Ensure the script is run with sudo/root permissions
-if [ "$EUID" -ne 0 ]; then 
-  echo "Please run as root or using sudo."
-  exit
+if sudo -n true 2>/dev/null; then
+    :
+else
+    echo -ne "${LB}${RED}[E]${RT} This script must be run as root. Please enter your "; sudo -v || { echo -e "${RED}[E]${RT} Operation cancelled."; exit 1; }
 fi
 
 # Step 1: Download the repository
-echo "Cloning the repository from $REPO_URL into $TEMP_DIR..."
-git clone $REPO_URL $TEMP_DIR || { echo "Failed to clone repository."; exit 1; }
+echo -e "${LB}${CYAN}[#}${RT} Cloning the repository from $REPO_URL into $TEMP_DIR...${LB}"
+git clone $REPO_URL $TEMP_DIR || { echo -e "${RED}[E]${RT} Failed to clone repository."; exit 1; }
 
 # Step 2: Create the shared directory if it doesn't exist
 if [ ! -d "$SHARED_DIR" ]; then
-  echo "Creating shared directory at $SHARED_DIR..."
-  mkdir -p $SHARED_DIR || { echo "Failed to create directory."; exit 1; }
+  echo -e "${LB}${CYAN}[#}${RT} Creating shared directory at $SHARED_DIR..."
+  mkdir -p $SHARED_DIR || { echo -e "${RED}[E]${RT} Failed to create directory."; exit 1; }
 fi
 
 # Step 3: Copy the repository files to the shared directory
-echo "Copying repository to $SHARED_DIR..."
-cp -r $TEMP_DIR/* $SHARED_DIR || { echo "Failed to copy files to $SHARED_DIR."; exit 1; }
+echo -e "${LB}${CYAN}[#}${RT} Copying repository to $SHARED_DIR..."
+sudo cp -r $TEMP_DIR/* $SHARED_DIR || { echo -e "${RED}[E]${RT} Failed to copy files to $SHARED_DIR."; exit 1; }
 
 # Step 4: Check if the binary exists in modules/main
 if [ ! -f "$SHARED_DIR/modules/main" ]; then
-  echo "The main binary was not found in $SHARED_DIR/modules. Please ensure it is built correctly."
+  echo -e "${LB}${RED}[E]${RT} The main binary was not found in $SHARED_DIR/modules. Please ensure it is built correctly."
   exit 1
 fi
 
 # Step 5: Move the binary to /usr/bin and rename to sysdd
-echo "Installing binary as $BIN_NAME to $BIN_DIR..."
-cp $SHARED_DIR/modules/main $BIN_DIR/$BIN_NAME || { echo "Failed to copy binary to /usr/bin."; exit 1; }
-chmod +x $BIN_DIR/$BIN_NAME
+echo -e "${LB}${CYAN}[#}${RT} Installing binary as $BIN_NAME to $BIN_DIR..."
+sudo cp $SHARED_DIR/modules/main $BIN_DIR/$BIN_NAME || { echo -e "${RED}[E]${RT} Failed to copy binary to /usr/bin."; exit 1; }
+sudo chmod +x $BIN_DIR/$BIN_NAME
+
+sudo sudo cp -Rf static/shortcuts/sysdd.desktop /usr/share/applications/sysdd.desktop
 
 # Step 6: Clean up
-echo "Cleaning up temporary files..."
+echo -e "${LB}${CYAN}[#}${RT} Cleaning up temporary files..."
 rm -rf $TEMP_DIR
 
-echo "Installation completed. You can now run 'sysdd' from the terminal."
+echo -e "${LB}${GREEN}[+]${RT} Installation completed. You can now run 'sysdd' from the terminal."

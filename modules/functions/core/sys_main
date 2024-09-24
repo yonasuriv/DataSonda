@@ -214,9 +214,29 @@ function system_info {
     #######
     current_date=$(date +"%d-%m-%Y %H:%M:%S")
 
-    # Function to get the last 3 installed packages
-    last_installed_pkgs=$(grep "install " /var/log/apt/history.log | tail -3 | awk '{print $4}' | paste -sd ',' | sed 's/,/, /g')
+    last_installed_pkgs() {
+        # Get the last installed packages
+        last_installed_pkgs=$(grep "install " /var/log/apt/history.log | tail -10 | tac | awk '{print $4}')
 
+        # Initialize an empty string to hold the result
+        output=""
+
+        # Loop through each package and check if it's installed
+        for pkg in $last_installed_pkgs; do
+            if which "$pkg"; then
+                # Accumulate the output with green color for installed packages
+                output+="${GREEN}$pkg${NC}, "
+            else
+                # Accumulate the output with red color for not installed packages
+                output+="${RED}$pkg${NC}, "
+            fi
+        done
+
+        # Remove the trailing comma and space, then print the output
+        echo -e "${output%, }"
+    }
+    
+    
     # Function to check if OS upgrades are available
     check_os_upgrade_available() {
         if command -v apt &> /dev/null; then
@@ -381,7 +401,7 @@ function system_info {
     echo -e " |  System Identifier:      BOOT ID: $boot_id, MACHINE ID: $machine_id${LB}${RT}"
 
     echo -e "${CURSIVE}[+]${RT} ${NKBRCYAN}$manual_pkgs${RT} packages installed by user, ${NKBRCYAN}$default_pkgs${RT} from OS, ${NKBRCYAN}$total_pkgs${RT} total / ${NKBRCYAN}$processes_start${RT} startup processes enabled, ${NKBRCYAN}$processes_running${RT} running (${NKBRCYAN}$services_running${RT} services)${RT}"
-    echo -e "${LB}${DIM}    Last installed: $last_installed_pkgs${RT}"
+    echo -e "${LB}${DIM}    Last installed: $(last_installed_pkgs)${RT}"
    
     echo -e "${LB}$restart_recommended $formatted_uptime since the last reboot."
     echo -e "$update_recommended $(calculate_time_since_last_update) since the last system update.${LB}"

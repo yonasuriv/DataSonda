@@ -1,0 +1,616 @@
+#!/bin/bash
+
+# Define color and style variables
+LB='\n'
+RT='\033[0m'
+GREEN="\033[0;32m"
+GREEN2='\033[92m'
+RED="\033[0;31m"
+YELLOW="\033[0;33m"
+BLUE="\033[0;34m"
+CYAN="\033[0;36m"
+NEGATIVE="\033[7m"
+
+# Define a log file to store the output
+LOGFILE="$HOME/Desktop/system_info_$(date +%d%m%y).log"
+
+# Clear log file if it already exists
+> $LOGFILE
+
+# Append detailed information about the log created
+echo "[i] File created on $(date '+%A, %B %d, %Y at %H:%M:%S %Z')" | cat - "$LOGFILE" > temp_file && mv temp_file "$LOGFILE"
+
+
+# Variable to store the output modifier if --save is provided
+SOUT=""
+PRETTYP=""
+
+# Function to print in yellow for sudo commands skipped
+function print_sudo_skipped {
+    echo -e "${LB}${YELLOW}[!] ${1} skipped as it requires elevated privileges (sudo).${RT}"
+}
+
+function pprint {
+    local command="$1"
+    if [[ -n "$PRETTYP" ]]; then
+        # Run the command and strip any color codes (ANSI escape sequences)
+        echo -e "${DIM}${WHITE}$(eval $command | sed 's/\x1b\[[0-9;]*m//g') ${RT}"
+    else
+        eval "$command"
+    fi
+}
+
+# Wrapper function to handle saving output if --save is present
+function RUNwoh {
+    # Run with output handling
+    local function_name=$1
+    if [[ -n "$SOUT" ]]; then
+        eval "$function_name | tee /dev/tty | sed 's/\x1b\[[0-9;]*m//g' >> $LOGFILE"
+    else
+        eval "$function_name"
+    fi
+}
+
+###################################################
+
+# # 1. General System Information
+# function general_system_info {
+#     # uname -a shows kernel name, network node hostname, kernel release, kernel version, machine architecture, and more.
+#     echo -e "${LB}${CYAN}[#] General System Information ${BLUE}(uname -a)${RT}${LB}"
+#     pprint "uname -a"
+# }
+
+# # 2. Distribution Version Information
+# function distro_info {
+#     # lsb_release -a provides a summary of the distribution version
+#     echo -e "${LB}${CYAN}[#] Distro Information ${BLUE}(lsb_release -a)${RT}${LB}"
+#     pprint "lsb_release -a"
+# }
+
+# 3. System Information (hostnamectl)
+# function system_info_hostnamectl {
+#     # hostnamectl shows system hostname, kernel version, architecture, and more.
+#     echo -e "${LB}${CYAN}[#] System Information ${BLUE}(hostnamectl)${RT}${LB}"
+#     pprint "hostnamectl"
+# }
+
+function system_info {
+    echo -e "${LB}${NEGATIVE}[#] System Information ${RT}${LB}"
+    # Define helper function to safely read system files
+    read_system_file() {
+        local file_path="$1"
+        if [[ -r "$file_path" ]]; then
+            cat "$file_path"
+        else
+            echo "Unknown"
+        fi
+    }
+
+    # Fetch the hostname from /etc/hostname
+    hostname=$(cat /etc/hostname)
+
+    # Fetch static hostname from /proc/sys/kernel/hostname
+    static_hostname=$(cat /proc/sys/kernel/hostname)
+
+    # Fetch machine ID
+    machine_id=$(cat /etc/machine-id)
+
+    # Fetch boot ID
+    boot_id=$(cat /proc/sys/kernel/random/boot_id)
+
+    # Fetch chassis type from /sys/class/dmi/id/chassis_type or chassis_vendor if available
+    chassis_type=$(read_system_file "/sys/class/dmi/id/chassis_type")
+    chassis_vendor=$(read_system_file "/sys/class/dmi/id/chassis_vendor")
+
+    # Fetch distribution information from /etc/os-release
+    os_name=$(grep "^NAME=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+    os_version=$(grep "^VERSION=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+    os_pretty_name=$(grep "^PRETTY_NAME=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+
+    # Fetch distribution type (ID) and parent distribution (ID_LIKE)
+    distro_type=$(grep "^ID=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+    distro_base=$(grep "^ID_LIKE=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+
+    # Fetch kernel version from /proc/version
+    kernel_version=$(cat /proc/version | awk '{print $3}')
+    kernel_name=$(uname -s)
+
+    # Fetch architecture from uname
+    architecture=$(uname -m)
+
+    # Fetch deployment environment (if available)
+    deployment_env=$(read_system_file "/sys/class/dmi/id/product_family")
+
+    # Fetch kernel release and version from /proc/sys/kernel
+    kernel_release=$(cat /proc/sys/kernel/osrelease)
+    kernel_version_full=$(cat /proc/sys/kernel/version)
+
+    # Fetch system uptime in a human-readable format (using /proc/uptime)
+    uptime_seconds=$(cat /proc/uptime | awk '{print $1}')
+    uptime_days=$(echo "$uptime_seconds/86400" | bc)
+    uptime_hours=$(echo "($uptime_seconds%86400)/3600" | bc)
+    uptime_minutes=$(echo "($uptime_seconds%3600)/60" | bc)
+    formatted_uptime="${uptime_days} days, ${uptime_hours} hours, ${uptime_minutes} minutes"
+
+    # Fetch CPU model and details from /proc/cpuinfo
+    cpu_model=$(grep -m 1 'model name' /proc/cpuinfo | cut -d ':' -f2 | xargs)
+
+    # Fetch total memory (RAM) from /proc/meminfo
+    total_memory=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024 " MB"}')
+
+    # Fetch firmware version from /sys/class/dmi/id/bios_version
+    firmware_version=$(read_system_file "/sys/class/dmi/id/bios_version")
+
+    # Fetch hardware vendor and model from /sys/class/dmi/id
+    hardware_vendor=$(read_system_file "/sys/class/dmi/id/sys_vendor")
+    hardware_model=$(read_system_file "/sys/class/dmi/id/product_name")
+
+    # Fetch firmware date from /sys/class/dmi/id/bios_date
+    firmware_date=$(cat /sys/class/dmi/id/bios_date)
+
+    # Calculate the age of the firmware in years and months
+    current_date=$(date +%Y-%m-%d)
+    firmware_age=$(echo "($(date -d "$current_date" +%s) - $(date -d "$firmware_date" +%s)) / (60*60*24*30.44)" | bc)
+
+    # Fetch total installed packages
+    total_pkgs="$(dpkg -l | cat | wc -l)"
+
+    # Fetch memory information
+    total_memory=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024 " MB"}')
+    available_memory=$(grep MemAvailable /proc/meminfo | awk '{print $2 / 1024 " MB"}')
+    used_memory=$(awk '/MemTotal/{total=$2} /MemAvailable/{available=$2} END {print (total-available) / 1024 " MB"}' /proc/meminfo)
+
+    # Fetch disk information
+    total_disk=$(df --total -BG | grep 'total' | awk '{print $2}' | sed 's/G//')
+    used_disk=$(df --total -BG | grep 'total' | awk '{print $3}' | sed 's/G//')
+    available_disk=$(df --total -BG | grep 'total' | awk '{print $4}' | sed 's/G//')
+    most_used_fs=$(df -h | grep -vE '^Filesystem|tmpfs|cdrom' | sort -k 5 -r | head -n 1 | awk '{print $1 " (" $5 " used)"}')
+
+    # Fetch GPU model information
+    gpu_info=$(lspci | grep -i vga | cut -d ':' -f3 | xargs)
+
+    # Fetch Audio model information
+    audio_info=$(lspci | grep -i audio | cut -d ':' -f3 | xargs)
+
+
+    # Output the information in a formatted way
+    # echo -e "==================== Detailed System Information ====================="
+    echo -e " | System Uptime:          $formatted_uptime"
+    echo -e " | "
+    echo -e " | Hostname:               $hostname"
+    echo -e " | "
+    echo -e " | Operating System:       $os_pretty_name $os_version"
+    echo -e " | Architecture:           $architecture"
+    echo -e " | Distribution Type:      $distro_base"
+    echo -e " | "
+    echo -e " | Kernel Name:            $kernel_name"
+    echo -e " | Kernel Release:         $kernel_version ($kernel_release)"
+    echo -e " | Kernel Version:         $kernel_version_full"
+    echo -e " | "
+    echo -e " | CPU Model:              $cpu_model"
+    echo -e " | GPU Model:              $gpu_info"
+    echo -e " | Audio Model:            $audio_info"
+    echo -e " | "
+    echo -e " | Hardware Vendor:        $hardware_vendor"
+    echo -e " | Hardware Model:         $hardware_model"
+    echo -e " | "
+    echo -e " | Firmware Version:       $firmware_version"
+    echo -e " | Firmware Date:          $firmware_date"
+    echo -e " | Firmware Age:           $firmware_age months"
+    echo -e " | "
+    echo -e " | Installed Packages:     $total_pkgs"
+    echo -e " | "
+    echo -e " | Total Disk Space:       $total_disk GB"
+    echo -e " | Used Disk Space:        $used_disk GB"
+    echo -e " | Available Disk Space:   $available_disk GB"
+    echo -e " | Most Used Filesystem:   $most_used_fs"
+    echo -e " | "
+    echo -e " | Total Memory:           $total_memory"
+    echo -e " | Used Memory:            $used_memory"
+    echo -e " | Available Memory:       $available_memory"
+    echo -e " | "
+    echo -e " | Boot ID:                $boot_id"
+    echo -e " | Machine ID:             $machine_id"
+    echo -e " | "
+    echo -e " | Chassis Type:           $chassis_type"
+    echo -e " | Chassis Vendor:         $chassis_vendor"
+    echo ""
+    # echo -e "======================================================================"
+}
+
+# 4. CPU Information
+function cpu_info {
+    # lscpu displays information about the CPU architecture, cores, threads, cache, and more.
+    echo -e "${LB}${CYAN}[#] CPU Information ${BLUE}(lscpu)${RT}${LB}"
+    pprint "lscpu"
+}
+
+# 5. Memory Information
+function memory_info {
+    # free -h displays free and used memory in a human-readable format.
+    echo -e "${LB}${CYAN}[#] Memory Information ${BLUE}(free -h)${RT}${LB}"
+    pprint "free -h"
+}
+
+# 6. Detailed Memory Hardware Information (requires sudo)
+function detailed_memory_info {
+    # dmidecode provides detailed information about the memory modules.
+    if [[ "$key" == "-all" ]]; then
+        echo -e "${LB}${YELLOW}[!] Detailed Memory Hardware Information skipped. Only available with -ald or -mem"
+    else
+        if sudo -n true 2>/dev/null; then
+            echo -e "${LB}${CYAN}[#] Detailed Memory Hardware Information ${BLUE}(dmidecode -t memory)${RT}${LB}"
+            pprint "sudo dmidecode -t memory"
+        else
+            print_sudo_skipped "Detailed Memory Hardware Information (dmidecode -t memory)"
+        fi
+    fi
+}
+
+# 7. Disk and Storage Information
+function disk_storage_info {
+    # df -h shows disk usage and mounted filesystems in a human-readable format.
+    echo -e "${LB}${CYAN}[#] Disk and Storage Information ${BLUE}(df -h)${RT}${LB}"
+    df -h
+
+    # lsblk shows the block devices and their mount points.
+    echo -e "${LB}${CYAN}[#] Block Devices ${BLUE}(lsblk)${RT}${LB}"
+    pprint "lsblk"
+
+    # fdisk -l shows detailed partition and disk information (requires sudo)
+
+    if sudo -n true 2>/dev/null; then
+        echo -e "${LB}${CYAN}[#] Partition and Disk Information ${BLUE}(fdisk -l)${RT}${LB}"
+        pprint "sudo fdisk -l"
+    else
+        print_sudo_skipped "Partition and Disk Information (fdisk -l)"
+    fi
+}
+
+# 8. PCI Devices
+function pci_devices {
+    # lspci shows the list of all PCI devices ${BLUE}(e.g., GPUs, network cards).
+    if [[ "$key" == "-all" ]]; then
+        echo -e "${LB}${YELLOW}[!] PCI Devices Information skipped. Only available with -ald or -devices"
+    else
+        echo -e "${LB}${CYAN}[#] PCI Devices ${BLUE}(lspci)${RT}${LB}"
+        pprint "lspci"
+    fi
+}
+
+# 9. USB Devices
+function usb_devices {
+    # lsusb shows the list of all connected USB devices.
+    if [[ "$key" == "-all" ]]; then
+        echo -e "${LB}${YELLOW}[!] USB Devices Information skipped. Only available with -ald or -devices"
+    else
+        echo -e "${LB}${CYAN}[#] USB Devices ${BLUE}(lsusb)${RT}${LB}"
+        pprint "lsusb"
+    fi
+}
+
+# 10. Network Information
+function network_info {
+    # ip addr show displays IP address information for all network interfaces.
+    echo -e "${LB}${CYAN}[#] Network Interfaces ${BLUE}(ip addr show)${RT}${LB}"
+    pprint "ip addr show"
+
+    # ip route show displays the current routing table.
+    echo -e "${LB}${CYAN}[#] Routing Table ${BLUE}(ip route show)${RT}${LB}"
+    pprint "ip route show"
+}
+
+# 11. Kernel Boot Parameters
+function kernel_boot_params {
+    # /proc/cmdline contains the boot parameters passed to the kernel.
+    echo -e "${LB}${CYAN}[#] Kernel Boot Parameters ${BLUE}(cat /proc/cmdline)${RT}${LB}"
+    pprint "cat /proc/cmdline"
+}
+
+# 12. Kernel Modules
+function kernel_modules {
+    # lsmod shows the currently loaded kernel modules.
+    if [[ "$key" == "-all" ]]; then
+        echo -e "${LB}${YELLOW}[!] Loaded Kernel Modules skipped. Only available with -ald or -kernel"
+    else
+        echo -e "${LB}${CYAN}[#] Loaded Kernel Modules ${BLUE}(lsmod)${RT}${LB}"
+        pprint "lsmod"
+    fi
+}
+
+# 13. Running Network Connections
+function network_connections {
+    # netstat -tuln shows active TCP and UDP network connections.
+    echo -e "${LB}${CYAN}[#] Active Network Connections ${BLUE}(netstat -tuln)${RT}${LB}"
+    pprint "netstat -tuln"
+}
+
+# 14. Graphics Information
+function graphics_info {
+    # lspci | grep -i vga shows information about the installed graphics card.
+    echo -e "${LB}${CYAN}[#] Graphics Card Information ${BLUE}(lspci | grep -i vga)${RT}${LB}"
+    pprint "lspci | grep -i vga"
+
+    # glxinfo | grep "OpenGL" provides OpenGL version and vendor information.
+    echo -e "${LB}${CYAN}[#] OpenGL Information ${BLUE}(glxinfo | grep 'OpenGL')${RT}${LB}"
+    pprint "glxinfo | grep 'OpenGL'"
+}
+
+# 15. Battery Information (for laptops)
+function battery_info {
+    # upower -e provides battery status and details.
+    devices=$(upower -e)
+    # Check if any devices were found
+    if [ -z "$devices" ]; then
+        echo -e "${YELLOW}[!] No power devices found. Skipping Battery Information ${BLUE}(upower -e)${RT}${LB}"
+    else
+        echo -e "${LB}${CYAN}[#] Battery Information ${BLUE}(upower -e)${RT}${LB}"
+
+        # Loop through each device and display detailed info using upower -i
+        for device in $devices; do
+            echo -e "Details for device: $device${LB}"
+            pprint "upower -i $device"
+            #echo -e "${LB}--------------------------------------${LB}"
+        done
+    fi
+}
+
+# 16. List of Installed Packages
+function installed_packages {
+    # dpkg -l lists all installed packages.
+    echo -e "${LB}${CYAN}[#] Installed Packages ${BLUE}(dpkg -l)${RT}${LB}"
+    totalpkgs=$(dpkg -l | cat | wc -l)
+    if [[ "$key" == "-all" ]]; then
+        echo -e "There are $totalpkgs installed packages on the system.${LB}"
+        echo -e "${YELLOW}[!] To see the complete list, use -ald or -pkgs"
+    else 
+        echo -e "There are $totalpkgs installed packages on the system.${LB}"
+        pprint "dpkg -l | cat"
+    fi
+}
+
+# 17. Complete System Information Using inxi (if installed)
+function complete_system_info {
+    # inxi provides a summary of hardware and system details.
+    if command -v inxi &> /dev/null
+    then
+        echo -e "${LB}${CYAN}[#] Complete System Information ${BLUE}(inxi -Fz)${RT}${LB}"
+        pprint "inxi -Fz --system --max-wrap 10 --indents 10 -c 37 --width -1 $VLEVEL"
+    else
+        echo -e "${LB}${YELLOW}[#] inxi is not installed. Install it using 'sudo apt install inxi'.${RT}${LB}"
+    fi
+}
+
+function system_recommended {
+    # Example command (replace this with your actual command)
+    output=$(inxi --recommends 2>&1)
+
+    # Remove the first 5 lines using tail
+    filtered_output=$(echo "$output" | tail -n +6 | head -n -2)
+
+    # Use awk to color "Missing", "Present", and add newlines before and after the dashes
+    echo -e "${LB}$filtered_output" | awk -v yellow="$YELLOW" -v green="$GREEN" -v green2="$GREEN2" -v red="$RED" -v negative="$NEGATIVE" -v reset="$RT" \
+    '
+    {gsub(/(------------------------------------------------------------------------------)/, ""); 
+    gsub(/):/, "):" reset); 
+    gsub(/Missing/, red "Missing" reset); 
+    gsub(/Present/, green "Present" reset); 
+    gsub(/Test: r/, negative "[#] R"); 
+    gsub(/ore tools:/, "ore tools" reset); 
+    gsub(/Test: c/, negative "[#] C"); 
+    gsub(/The following recommended/, yellow "[!] " reset "The following recommended");
+    gsub(/All required/, green2 "[✔] "  "All required"); 
+    gsub(/All recommended/, green2 "[✔] "  "All recommended"); 
+    gsub(/are missing:/, "are missing: \n"); 
+    gsub(/are present/, "are present " reset);
+    gsub(/system directories:/, "system directories: " reset); 
+    gsub(/system programs:/, "system programs: " reset); 
+    gsub(/display information programs:/, "display information programs: " reset); 
+    gsub(/downloader programs (You only need one of these):/, reset "downloader programs: " ); 
+    gsub(/kernel modules:/, "kernel modules: " reset); 
+    gsub(/Perl modules (Optional):/, "Perl modules: " reset); 
+    gsub(/directories:/, "directories: " reset); 
+    gsub(/files:/, "files: " reset); 
+    print}'
+}
+###################################################
+
+# First check if --save is the only argument
+if [[ "$#" -eq 1 && "$1" == "--save" ]]; then
+    # Set SOUT to enable saving
+    SOUT="| tee /dev/tty | sed 's/\x1b\[[0-9;]*m//g' >> $LOGFILE"
+    
+    # Run default functions (distro_info and system_info_hostnamectl)
+    # RUNwoh "general_system_info"
+    # RUNwoh "distro_info"
+    RUNwoh "system_info"
+
+# Otherwise, handle other cases (including --save combined with other arguments)
+else
+    for arg in "$@"; do
+        if [[ "$arg" == "--pretty" ]]; then
+            PRETTYP="true"
+        elif [[ "$arg" == "--save" ]]; then
+            SOUT="| tee /dev/tty | sed 's/\x1b\[[0-9;]*m//g' >> $LOGFILE"
+            break
+        fi
+    done
+fi
+
+# Check if no arguments are provided
+if [[ $# -eq 0 ]]; then
+    # RUNwoh "general_system_info"
+    # RUNwoh "distro_info"
+    RUNwoh "system_info"
+    
+fi
+
+# Argument handling ${BLUE}(Updated to handle multiple arguments)
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -net) # EXTERNAL CUSTOM SCRIPT
+            if [[ -f "${XBIN}/IPCONFIG" ]]; then
+                eval "python ${XBIN}/IPCONFIG ${SOUT}"
+                shift
+            else
+                echo -e "${RED}[E]${Rt} IPCONFIG is not installed. Get it at @yonasuriv github"
+                exit 1
+            fi
+            ;;        
+        -v)
+            VLEVEL="$2"
+            if [[ "$VLEVEL" =~ ^[1-8]$ ]]; then
+                VLEVEL="-v $2"
+                RUNwoh "complete_system_info"
+            else
+                echo -e "${LB}${RED}[E]${RT} The verbosity value must be between 1 and 8. Running default (1)."
+                VLEVEL="-v 1"
+                RUNwoh "complete_system_info"
+            fi
+            shift # past argument
+            shift # past value
+            ;;
+
+        -cpu)
+            RUNwoh "cpu_info"
+            shift
+            ;;
+        -mem)
+            RUNwoh "memory_info"
+            RUNwoh "detailed_memory_info"
+            shift
+            ;;
+        -disks)
+            RUNwoh "disk_storage_info"
+            shift
+            ;;
+        -devices)
+            RUNwoh "pci_devices"
+            RUNwoh "usb_devices"
+            shift
+            ;;
+        -networks)
+            RUNwoh "network_info"
+            RUNwoh "network_connections"
+            shift
+            ;;
+        -kernel)
+            RUNwoh "kernel_boot_params"
+            RUNwoh "kernel_modules"
+            shift
+            ;;
+        -gpu)
+            RUNwoh "graphics_info"
+            shift
+            ;;
+        -battery)
+            RUNwoh "battery_info"
+            shift
+            ;;
+        -pkgs)
+            RUNwoh "installed_packages"
+            shift
+            ;;
+        -distro)
+            RUNwoh "distro_info"
+            shift
+            ;;
+        --all-short|-all)
+            #RUNwoh "general_system_info" 
+            #RUNwoh "distro_info" 
+            #RUNwoh "system_info_hostnamectl"
+            RUNwoh "system_info"
+            RUNwoh "complete_system_info"
+            RUNwoh "kernel_boot_params" 
+            RUNwoh "kernel_modules" 
+            RUNwoh "battery_info" 
+            RUNwoh "cpu_info" 
+            RUNwoh "graphics_info" 
+            RUNwoh "memory_info" 
+            RUNwoh "detailed_memory_info" 
+            RUNwoh "disk_storage_info" 
+            RUNwoh "pci_devices" 
+            RUNwoh "usb_devices" 
+            RUNwoh "network_info" 
+            RUNwoh "network_connections" 
+            RUNwoh "installed_packages" 
+            shift
+            ;;
+        --all-detailed|-ald)
+            # RUNwoh "distro_info" 
+            # RUNwoh "system_info_hostnamectl"
+            # RUNwoh "general_system_info"
+            RUNwoh "system_info"
+            RUNwoh "complete_system_info"
+            RUNwoh "kernel_boot_params"
+            RUNwoh "kernel_modules"
+            RUNwoh "battery_info"
+            RUNwoh "cpu_info"
+            RUNwoh "graphics_info"
+            RUNwoh "memory_info"
+            RUNwoh "detailed_memory_info"
+            RUNwoh "disk_storage_info"
+            RUNwoh "pci_devices"
+            RUNwoh "usb_devices"
+            RUNwoh "network_info"
+            RUNwoh "network_connections"
+            RUNwoh "installed_packages"
+            
+            shift
+            ;;
+        -check)
+            RUNwoh "system_recommended"
+            exit 0
+            ;;
+        --pretty)
+            shift
+            ;;
+        --save)
+            shift
+            ;;
+        --help|-h|-H)
+            echo -e """
+    Usage: $0 [options]
+
+    Options:
+
+        -all             Show all information (long output)
+        -ald             Show all detailed information (very long output)
+
+        -pkgs            Show all installed packages
+
+        -v               Show more system information
+        -vv              Show complete system information
+        
+        -kernel          Show kernel boot parameters and loaded modules
+        -battery         Show battery information
+        -distro          Show distribution information
+        -cpu             Show CPU information
+        -gpu             Show GPU and graphics information
+        -mem*            Show memory information (requires sudo for detailed memory info)$
+        -disks*          Show disk and storage information (requires sudo for detailed partition info)
+        -devices         Show PCI and USB devices information
+        -networks        Show network interfaces and active connections
+
+        -net             ifconfig + ipconfig 2.0 (requires @yonasuriv ipconfig)
+
+        -check           Check required/recommended system dependencies
+
+        --save           Save output to log file
+
+            """
+            exit 0
+            ;;
+        *)
+            echo -e "${LB}${RED}[E]${RT} One or more arguments are invalid. Use $0 --help to see all available commands."
+            exit 1
+            ;;
+    esac
+done
+
+# Output result based on whether --save was used
+if [[ -n "$SOUT" ]]; then
+    echo -e "${LB}${GREEN}[✔] System information gathered successfully. Check $LOGFILE for details.${RT}"
+fi
+
