@@ -1,0 +1,27 @@
+Usage: $0 [options]
+
+    Options:
+
+        -all             Show all information (long output)
+        -ald             Show all detailed information (very long output)
+
+        -pkgs            Show all installed packages
+
+        -v               Show more system information
+        -vv              Show complete system information
+        
+        -kernel          Show kernel boot parameters and loaded modules
+        -battery         Show battery information
+        -distro          Show distribution information
+        -cpu             Show CPU information
+        -gpu             Show GPU and graphics information
+        -mem*            Show memory information (requires sudo for detailed memory info)$
+        -disks*          Show disk and storage information (requires sudo for detailed partition info)
+        -devices         Show PCI and USB devices information
+        -networks        Show network interfaces and active connections
+
+        -net             ifconfig + ipconfig 2.0 (requires @yonasuriv ipconfig)
+
+        -check           Check required/recommended system dependencies
+
+        --save           Save output to log file
