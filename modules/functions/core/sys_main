@@ -34,11 +34,12 @@ function system_info {
     deployment_env=$(read_system_file "/sys/class/dmi/id/product_family")
 
     # Fetch system uptime in a human-readable format (using /proc/uptime)
-    uptime_seconds=$(cat /proc/uptime | awk '{print $1}')
-    uptime_days=$(echo "$uptime_seconds/86400" | bc)
-    uptime_hours=$(echo "($uptime_seconds%86400)/3600" | bc)
-    uptime_minutes=$(echo "($uptime_seconds%3600)/60" | bc)
+    uptime_seconds=$(awk '{print $1}' /proc/uptime)
+    uptime_days=$(awk -v seconds="$uptime_seconds" 'BEGIN {print int(seconds/86400)}')
+    uptime_hours=$(awk -v seconds="$uptime_seconds" 'BEGIN {print int((seconds%86400)/3600)}')
+    uptime_minutes=$(awk -v seconds="$uptime_seconds" 'BEGIN {print int((seconds%3600)/60)}')
     formatted_uptime="${uptime_days} days, ${uptime_hours} hours, ${uptime_minutes} minutes"
+
 
     # [+] CATEGORY: Kernel Information
 
