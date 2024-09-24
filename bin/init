@@ -63,11 +63,11 @@ function LOGRUN {
 set -a
 
 # FOLDERS
+BIN="$INSTALLDIR/bin"
 DEV="$INSTALLDIR/dev"
 LIB="$INSTALLDIR/lib"
-MODULES="$LIB/modules"
+MODULES="$INSTALLDIR/modules"
 STATIC="$INSTALLDIR/static"
-
 
 INCLUDES="$LIB/includes"
 VERSION="$LIB/version"
@@ -76,13 +76,18 @@ MODCORE="$MODULES/core"
 MODINFO="$MODULES/info"
 
 # FILES
-source COLORS="$INCLUDES/colors"
-source LOGIC="$INCLUDES/logic"
-source LOGO="$INCLUDES/top"
+COLORS="$INCLUDES/colors"
+LOGIC="$INCLUDES/logic"
+LOGO="$INCLUDES/top"
+
 
 NETINFO="$MODCORE/netinfo"
 SYSINFO="$MODCORE/sysinfo"
 SYSCHECK="$MODCORE/syscheck"
+
+source $COLORS 
+source $LOGIC 
+source $LOGO
 
 source $MODINFO/battery
 source $MODINFO/cpu
@@ -108,7 +113,8 @@ if [[ "$#" -eq 1 && "$1" == "--save" ]]; then
     # LOGRUN "general_system_info"
     # LOGRUN "distro_info"
     # LOGRUN "system_info"
-    system_info
+    logo_sonda
+    LOGRUN "system_info"
     source $SYSINFO
 
 # Otherwise, handle other cases (including --save combined with other arguments)
@@ -128,27 +134,38 @@ if [[ $# -eq 0 ]]; then
     # LOGRUN "general_system_info"
     # LOGRUN "distro_info"
     # LOGRUN "system_info"
-    system_info
-    source $SYSINFO
+    logo_sonda
+    # LOGRUN "system_info"
+    # source $SYSINFO
 fi
 
 # Argument handling ${BLUE}(Updated to handle multiple arguments)
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        -net) # EXTERNAL CUSTOM SCRIPT
+        -net|-n)
             logo_netsonda
             python $NETINFO
             exit 0
             
             ;;
-        -sys) # EXTERNAL CUSTOM SCRIPT
+        -sys|-s)
             logo_syssonda
-            system_info
+            LOGRUN "system_info"
             source $SYSINFO
             exit 0
             
             ;;
+
+        --version)
+            source $VERSION/check -v
+            shift
+            ;;
+        --update)
+            source $VERSION/check -u
+            shift
+            ;;
+
         -check)
             LOGRUN "system_recommended"
             exit 0

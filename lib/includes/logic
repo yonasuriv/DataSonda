@@ -384,6 +384,4 @@ function system_info {
     else
         update_recommended="[*]"
     fi
-
-    # SCRIPT START
 }
