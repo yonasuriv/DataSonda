@@ -3,10 +3,10 @@
 INSTALLDIR="/usr/bin/share/sysdd"
 
 set -a
-MODDIR="$INSTALLDIR/functions"
-MODHEL="$INSTALLDIR/functions/info"
-MODLST="$INSTALLDIR/functions/list"
-MODCOR="$INSTALLDIR/functions/core"
+MODDIR="$INSTALLDIR/modules/functions"
+MODHEL="$INSTALLDIR/modules/functions/info"
+MODLST="$INSTALLDIR/modules/functions/list"
+MODCOR="$INSTALLDIR/modules/functions/core"
 
 STYLE="$INSTALLDIR/modules/style"
 HELPER="$INSTALLDIR/modules/helper"
