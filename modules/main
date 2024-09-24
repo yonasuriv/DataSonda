@@ -76,6 +76,7 @@ source $STYLE/colors
 
 source $MODCOR/sys_main
 source $MODCOR/sys_check
+source $MODCOR/sys_logic
 source $MODLST/installed_packages
 source $MODHEL/info_networks
 source $MODHEL/info_devices
