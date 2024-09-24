@@ -14,7 +14,7 @@ FUNCTIONS="$INSTALLDIR/modules/functions"
 set +x
 
 source $STYLE/colors
-source $STYLE/top
+source $HELPER/top
 
 source $MODCOR/sys_main
 source $MODCOR/sys_check
@@ -28,4 +28,4 @@ source $MODHEL/info_cpu
 source $MODHEL/info_kernel
 source $MODHEL/info_battery
 
-source helper/args
+source $HELPER/args
