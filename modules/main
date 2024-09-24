@@ -201,7 +201,8 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --help|-h|-H)
-            echo -e "$MAN"
+            man_content=$(cat "$MAN")
+            echo -e "$man_content"
             exit 0
             ;;
         *)
