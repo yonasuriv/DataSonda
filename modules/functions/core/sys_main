@@ -214,21 +214,21 @@ function system_info {
     #######
     current_date=$(date +"%d-%m-%Y %H:%M:%S")
 
-    last_installed_pkgs() {
-        # Get the last installed packages
-        last_installed_pkgs=$(grep "install " /var/log/apt/history.log | tail -10 | tac | awk '{print $4}')
+    lastipkgs() {
+        # Get the last installed packages and reverse the order (newer to older)
+        last_installed_pkgs=$(grep "install " /var/log/apt/history.log | tail -10 | awk '{print $4}' | tac)
 
         # Initialize an empty string to hold the result
         output=""
 
         # Loop through each package and check if it's installed
         for pkg in $last_installed_pkgs; do
-            if which "$pkg"; then
+            if which "$pkg" >/dev/null 2>&1; then
                 # Accumulate the output with green color for installed packages
-                output+="${GREEN}$pkg${NC}, "
+                output+="$pkg, "
             else
                 # Accumulate the output with red color for not installed packages
-                output+="${RED}$pkg${NC}, "
+                output+="${CURSIVE}${STRIKETHROUGH}$pkg${RT}, "
             fi
         done
 
@@ -339,22 +339,16 @@ function system_info {
         # Print Root details in the requested format
         [ -n "$root_device" ] && print_partition_custom "$root_device" "/"
     }
-    # echo -e "==================== Detailed System Information ====================="
-    # echo -e "${WHITE2}[+] System Information${RT}"
     
     # $current_date 
     echo ""
-    # echo -e " |  Main Partition $(get_disk)"
     net_status=$(ping -c 1 1.1.1.1 > /dev/null 2>&1 && echo -e "${GREEN2}${RT}${GREEN}NETWORK CONNECTED${RT}" || echo -e "${RED2}${RT} ${RED}Disconnected${RT}")
-    # echo -e "$net_status"
+
     
-    if [ "$total_pkg_update_count" -ge 15 ]; then
-        sys_status="${NKBRRED}$total_pkg_update_count updates available ${RT}${DIM}($upgradable_formatted, $security_updates_formatted) ${DIM}(last installed packages: $last_installed_pkgs.)${RT}"
-    elif [ "$total_pkg_update_count" -eq 0 ]; then
-        sys_status="${NKBRGREEN}System is up to date ${RT}(last installed packages: $last_installed_pkgs.)${RT}"
+    if [ "$total_pkg_update_count" -eq 0 ]; then
+        sys_status="${NKBRGREEN}SYSTEM UP TO DATE${RT}${RT}"
     else
-        # sys_status="${NKBRYELLOW}$total_pkg_update_count updates available ${RT}${DIM}    ($upgradable_formatted, $security_updates_formatted) ${DIM}(last installed: $last_installed_pkgs)${RT}"
-        sys_status="${NKMAGENTA}NEW UPDATES AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
+        sys_status="${NKMAGENTA}UPDATE AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
     fi 
 
     # REBOOT
@@ -401,7 +395,7 @@ function system_info {
     echo -e " |  System Identifier:      BOOT ID: $boot_id, MACHINE ID: $machine_id${LB}${RT}"
 
     echo -e "${CURSIVE}[+]${RT} ${NKBRCYAN}$manual_pkgs${RT} packages installed by user, ${NKBRCYAN}$default_pkgs${RT} from OS, ${NKBRCYAN}$total_pkgs${RT} total / ${NKBRCYAN}$processes_start${RT} startup processes enabled, ${NKBRCYAN}$processes_running${RT} running (${NKBRCYAN}$services_running${RT} services)${RT}"
-    echo -e "${LB}${DIM}    Last installed: $(last_installed_pkgs)${RT}"
+    echo -e "${LB}${DIM}    Last installed:${RT}         $(lastipkgs)${RT}"
    
     echo -e "${LB}$restart_recommended $formatted_uptime since the last reboot."
     echo -e "$update_recommended $(calculate_time_since_last_update) since the last system update.${LB}"

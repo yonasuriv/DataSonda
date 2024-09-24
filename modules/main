@@ -1,6 +1,7 @@
 #!/bin/bash
 
-INSTALLDIR="/usr/share/sysdd"
+#INSTALLDIR="/usr/share/sysdd"
+INSTALLDIR="$HOME/Downloads/sysdd"
 
 set -a
 MODDIR="$INSTALLDIR/modules/functions"
