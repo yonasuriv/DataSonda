@@ -31,8 +31,48 @@ else
     sudo -v || { echo -e "${RED}[E]${RT} Operation cancelled."; exit 1; }
 fi
 
+install_prompt() {
+    local action=$1  # Expect 'install' or 'uninstall' as an argument
+    
+    # Define proper nouns based on action
+    if [[ "$action" == "install" ]]; then
+        action_msg="install"
+        initializing_msg="Initializing installation..."
+    elif [[ "$action" == "uninstall" ]]; then
+        action_msg="uninstall"
+        initializing_msg="Initializing uninstallation..."
+    else
+        echo -e "${RED}[E] Invalid action. Only 'install' or 'uninstall' are allowed.${RT}"
+        exit 1
+    fi
+
+    # Display prompt
+    echo -e "${LB}${W} You are about to ${NKYELLOW}${action_msg}${RT} ${NKYELLOW}sonda${RT}"
+    
+    # Prompt for user confirmation
+    read -p "   Continue? [Y/n]: " answer
+    echo -e "\033[A\033[K\033[A\033[K" # Move up 2 spaces and delete them (removes the prompt)
+
+    # Default to "yes" if the input is empty
+    if [[ -z "$answer" ]]; then
+        answer="y"
+    fi
+
+    # Check the user's response
+    if [[ "$answer" == [yY] ]]; then
+        echo -e "${L} ${initializing_msg}${RT}"
+        sleep 1
+    else
+        echo -e "${E} ${action_msg^} cancelled."  # Capitalize first letter of the action (Install/Uninstall)
+        exit
+    fi
+}
+
+
 # Function to handle installation
 install_sonda() {
+    
+
     echo -e "${LB}  +  Starting installation process...${RT}"
     # Install additional dependencies quietly
     # echo -e "${LB}  +  Installing dependencies...${RT}"
@@ -102,6 +142,8 @@ install_sonda() {
 
 # Function to handle uninstallation
 uninstall_sonda() {
+    install_prompt "uninstall"
+
     echo -e "  +  Starting uninstallation process...${RT}"
 
     echo -e "  | "
@@ -132,21 +174,21 @@ uninstall_sonda() {
 
     # Remove the installation directory
     echo -e "  +  Removing installation directory...${RT}"
-    rm -rf "$INSTALL_DIR" || fail
+    sudo rm -rf "$INSTALL_DIR" || fail
 
     echo -e "${GREEN}  ✔  Uninstallation completed.${RT}"
 }
 
 # Main logic to parse the arguments
 case "$1" in
-    --install)
+    --install|-i)
         install_sonda
         ;;
-    --uninstall)
+    --uninstall|-u)
         uninstall_sonda
         ;;
     *)
-        echo -e "${RB}${RED}[E]${RT} Invalid argument. Use --install or --uninstall.${RT}"
+        echo -e "${LB}${RB}${RED}[E]${RT} Invalid argument. Use -i|--install or -u|--uninstall.${RT}"
         exit 1
         ;;
 esac
