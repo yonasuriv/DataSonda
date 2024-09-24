@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Variables
+REPO_URL="https://raw.githubusercontent.com/yonasuriv/sysdd/refs/heads/main/static/version/current"
+LOCAL_VERSION_FILE="$VERSION/current" 
+
+# Function to check for updates
+version_check() {
+    if [ ! -f "$LOCAL_VERSION_FILE" ]; then
+        echo "Local version file not found!"
+        exit 1
+    fi
+
+    # Get the local version
+    LOCAL_VERSION=$(cat "$LOCAL_VERSION_FILE")
+    echo "Local version: $LOCAL_VERSION"
+
+    # Fetch the remote version from the repository
+    REMOTE_VERSION=$(curl -s "$REPO_URL")
+
+    if [ -z "$REMOTE_VERSION" ]; then
+        echo "Failed to retrieve remote version!"
+        exit 1
+    fi
+
+    echo "Remote version: $REMOTE_VERSION"
+
+    # Compare versions
+    if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
+        echo "Your version is up-to-date!"
+    else
+        echo "A new version is available! Local: $LOCAL_VERSION, Remote: $REMOTE_VERSION"
+    fi
+}
+
+# Function to update the repository
+version_update() {
+    echo "Updating repository..."
+    git pull origin main  # Change 'main' to your default branch if necessary
+}
+
+# Handle script arguments
+case "$1" in
+    --version)
+        version_check
+        ;;
+    --update)
+        version_update
+        ;;
+    *)
+        echo "Usage: $0 [--version|--update]"
+        exit 1
+        ;;
+esac

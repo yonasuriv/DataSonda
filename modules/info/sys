@@ -26,7 +26,5 @@ function complete_system_info {
     then
         echo -e "${LB}${CYAN}[#] Complete System Information ${BLUE}(inxi -Fz)${RT}${LB}"
         pprint "inxi -Fz --system --max-wrap 10 --indents 10 -c 37 --width -1 $VLEVEL"
-    else
-        echo -e "${LB}${YELLOW}[#] inxi is not installed. Install it using 'sudo apt install inxi'.${RT}${LB}"
     fi
 }

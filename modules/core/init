@@ -20,7 +20,7 @@ fi
 
 savelog() {
     # Define a log file to store the output
-    LOGFILE="$HOME/Desktop/system_info_$(date +%d%m%y).log"
+    LOGFILE="$HOME/Desktop/system_$(date +%d%m%y).log"
 
     # Clear log file if it already exists
     > $LOGFILE
@@ -62,35 +62,40 @@ function RUNwoh {
 # Script init
 set -a
 
+# FOLDERS
+DEV="$INSTALLDIR/dev"
+LIB="$INSTALLDIR/lib"
+MODULES="$LIB/modules"
 STATIC="$INSTALLDIR/static"
-MODULES="$INSTALLDIR/modules"
 
-MODDIR="$INSTALLDIR/modules/functions"
-MODHEL="$INSTALLDIR/modules/functions/info"
-MODLST="$INSTALLDIR/modules/functions/list"
-MODCOR="$INSTALLDIR/modules/functions/core"
 
-STYLE="$INSTALLDIR/modules/style"
-HELPER="$INSTALLDIR/modules/helper"
-FUNCTIONS="$INSTALLDIR/modules/functions"
+INCLUDES="$LIB/includes"
+VERSION="$LIB/version"
 
-source $STATIC/palette/colors
-source $STATIC/files/top
+MODCORE="$MODULES/core"
+MODINFO="$MODULES/info"
 
-source $MODCOR/logic
-# source $MODCOR/sys_main
-source $MODCOR/sys_check
-source $MODLST/installed_packages
-source $MODHEL/info_networks
-source $MODHEL/info_devices
-source $MODHEL/info_gpu
-source $MODHEL/info_disks
-source $MODHEL/info_sys
-source $MODHEL/info_cpu
-source $MODHEL/info_kernel
-source $MODHEL/info_battery
+# FILES
+source COLORS="$INCLUDES/colors"
+source LOGIC="$INCLUDES/logic"
+source LOGO="$INCLUDES/top"
 
-USAGE="$STATIC/files/man"
+NETINFO="$MODCORE/netinfo"
+SYSINFO="$MODCORE/sysinfo"
+SYSCHECK="$MODCORE/syscheck"
+
+source $MODINFO/battery
+source $MODINFO/cpu
+source $MODINFO/devices
+source $MODINFO/disks
+source $MODINFO/gpu
+source $MODINFO/kernel
+source $MODINFO/memory
+source $MODINFO/network
+source $MODINFO/packages
+source $MODINFO/sys
+
+USAGE="$INCLUDES/man"
 
 set +a
 
@@ -99,11 +104,12 @@ if [[ "$#" -eq 1 && "$1" == "--save" ]]; then
     # Set SOUT to enable saving
     SOUT="| tee /dev/tty | sed 's/\x1b\[[0-9;]*m//g' >> $LOGFILE"
     
-    # Run default functions (distro_info and system_info_hostnamectl)
+    # Run default functions (distro_info and system_hostnamectl)
     # RUNwoh "general_system_info"
     # RUNwoh "distro_info"
     # RUNwoh "system_info"
-    source $MODCOR/sys_main
+    system_info
+    source $SYSINFO
 
 # Otherwise, handle other cases (including --save combined with other arguments)
 else
@@ -123,7 +129,7 @@ if [[ $# -eq 0 ]]; then
     # RUNwoh "distro_info"
     # RUNwoh "system_info"
     system_info
-    source $MODCOR/sys_main
+    source $SYSINFO
 fi
 
 # Argument handling ${BLUE}(Updated to handle multiple arguments)
@@ -131,7 +137,7 @@ while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         -net) # EXTERNAL CUSTOM SCRIPT
-            python $MODCOR/sys_net.py
+            python $NETINFO
             exit 0
             
             ;;        
@@ -200,7 +206,7 @@ while [[ $# -gt 0 ]]; do
         --all-short|-all)
             #RUNwoh "general_system_info" 
             #RUNwoh "distro_info" 
-            #RUNwoh "system_info_hostnamectl"
+            #RUNwoh "system_hostnamectl"
             RUNwoh "system_info"
             RUNwoh "complete_system_info"
             RUNwoh "kernel_boot_params" 
@@ -220,7 +226,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --all-detailed|-ald)
             # RUNwoh "distro_info" 
-            # RUNwoh "system_info_hostnamectl"
+            # RUNwoh "system_hostnamectl"
             # RUNwoh "general_system_info"
             RUNwoh "system_info"
             RUNwoh "complete_system_info"
