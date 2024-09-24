@@ -165,8 +165,6 @@ def get_default_gateway():
 def print_network_info():
     os_system = platform.system()
     interfaces = psutil.net_if_addrs()  # Get network interface addresses
-    print("Available Interfaces:", interfaces)
-
 
     if os_system == "Linux":
         cmd = "ip -br -4 addr show"
@@ -184,7 +182,6 @@ def print_network_info():
         return
 
     previous_line = ""
-    
     # Lists to store interfaces by category
     loopback_interfaces = []
     vpn_interfaces = []
@@ -214,7 +211,6 @@ def print_network_info():
 
                 # Fetch MAC address, netmask, and subnet with CIDR
                 mac = 'N/A'
-                ip_only = 'N/A'
                 netmask = 'N/A'
                 subnet_with_cidr = 'N/A'
                 if iface in interfaces:
@@ -222,7 +218,6 @@ def print_network_info():
                         if snic.family == psutil.AF_LINK:  # MAC Address
                             mac = snic.address
                         if snic.family == socket.AF_INET:  # IPv4 address
-                            ip_only = snic.address
                             netmask = snic.netmask
                             # Pass IP without CIDR to get_subnet()
                             subnet_with_cidr = get_subnet(ip_only, netmask)
@@ -233,7 +228,7 @@ def print_network_info():
                 if iface == "lo" or iface == "lo0":  # "lo0" for macOS Loopback Interface
                     loopback_interfaces.append((iface, ip_only, mac, subnet_with_cidr, netmask, gateway))
 
-                elif re.match(r'^eth[0-9]+$', iface):  # Ethernet interfaces
+                elif re.match(r'^eth[0-9]+$', iface) or "en" in iface:  # Ethernet interfaces
                     ethernet_interfaces.append((iface, ip_only, mac, subnet_with_cidr, netmask, gateway))
 
                 elif iface.startswith('br-'):  # Bridge interfaces (e.g., br-b53a08e16e0e)
