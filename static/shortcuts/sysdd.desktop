@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Nokturn
+Name=SysDD
 Encoding=UTF-8
-Exec=nokturn
+Exec=sysdd
 Icon=/usr/share/sysdd/static/icons/sysdd.png
 StartupNotify=false
 Terminal=true
