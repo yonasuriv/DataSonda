@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Custom Styles
+E="${NKBRRED}[E]${RT}"
+W="${NKBRYELLOW}[!]${RT}"
+S="${NKBRGREEN}[✔]${RT}"
+
 # Define color and style variables
 LB='\n'
 RT='\033[0m'
@@ -77,7 +82,3 @@ NKBGBRMAGENTA='\033[105m'
 NKBGBRCYAN='\033[106m'
 NKBGBRWHITE='\033[107m'
 
-# Custom Styles
-E="${NKBRRED} E ${RT}"
-W="${NKBRYELLOW} ! ${RT}"
-S="${NKBRGREEN} ✔ ${RT}"

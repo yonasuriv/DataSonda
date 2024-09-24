@@ -2,12 +2,10 @@
 
 # SysNet/Sonda installation script
 # Created by @yonasuriv
+# Modified for use as a MAKEFILE with install and uninstall options
 
 # Source color definitions
 source lib/includes/colors
-
-# Enable debug mode to print each command
-# set -x
 
 # Define variables
 INSTALL_DIR="$HOME/.local/share/sonda"        # Local directory for the installation
@@ -19,6 +17,12 @@ LOCAL_BIN_NAME="init"                         # Local binary name inside the rep
 DESKTOP_FILE="static/shortcuts/sonda.desktop" # Path to the .desktop file inside the repo
 ICON_FILE="static/icons/sonda.png"            # Path to the icon inside the repo
 
+# Function to handle failure and exit
+fail() {
+    echo -e "${RED}[E]${RT} Process failed."
+    exit 1
+}
+
 # Ensure the script is run with sudo/root permissions
 if sudo -n true 2>/dev/null; then
     :
@@ -27,54 +31,122 @@ else
     sudo -v || { echo -e "${RED}[E]${RT} Operation cancelled."; exit 1; }
 fi
 
-# Function to handle failure and exit
-fail() {
-    echo -e "${RED}[E]${RT} Installation failed."
-    exit 1
+# Function to handle installation
+install_sonda() {
+    echo -e "${LB}  +  Starting installation process...${RT}"
+    # Install additional dependencies quietly
+    # echo -e "${LB}  +  Installing dependencies...${RT}"
+    sudo apt install -y lolcat inxi > /dev/null 2>&1 || fail
+
+    echo -e "  | " 
+
+    # Create the installation directory in the user's local share if it doesn't exist
+    echo -e "  +  Creating installation directory...${RT}"
+    mkdir -p "$INSTALL_DIR" || fail
+
+    echo -e "  | "
+
+    # Copy the current working directory's content to the installation directory
+    echo -e "  +  Copying files to installation directory...${RT}"
+    sudo cp -r "$PWD/." "$INSTALL_DIR" || fail
+
+    echo -e "  | "
+
+    # Set proper permissions for the install directory (read/write/execute only for the user)
+    echo -e "  +  Setting permissions...${RT}"
+    chmod 700 "$INSTALL_DIR" || fail
+
+    echo -e "  | "
+
+    # Create a symbolic link to the installation directory in /usr/share (system-wide)
+    echo -e "  +  Creating symbolic link in /usr/share...${RT}"
+    sudo ln -sf "$INSTALL_DIR" "$USR_SHARE/sonda" || fail
+
+    echo -e "  | "
+
+    # Ensure the binary exists before creating a symlink
+    echo -e "  +  Linking binary...${RT}"
+    if [ -f "$INSTALL_DIR/bin/$LOCAL_BIN_NAME" ]; then
+        sudo ln -sf "$INSTALL_DIR/bin/$LOCAL_BIN_NAME" "$USR_BIN/$BIN_NAME" || fail
+        sudo chmod +x "$USR_BIN/$BIN_NAME" || fail
+    else
+        echo -e "${RED}[E]${RT} Binary file not found: $INSTALL_DIR/bin/$LOCAL_BIN_NAME"
+        fail
+    fi
+
+    echo -e "  | "
+
+    # Install the .desktop file to make the application available in system menus
+    echo -e "  +  Installing .desktop file...${RT}"
+    if [ -f "$INSTALL_DIR/$DESKTOP_FILE" ]; then
+        sudo cp -f "$INSTALL_DIR/$DESKTOP_FILE" "/usr/share/applications" || fail
+    else
+        echo -e "${RED}[E]${RT} .desktop file not found: $INSTALL_DIR/$DESKTOP_FILE"
+        fail
+    fi
+
+    echo -e "  | "
+
+    # Ensure the icon file has the correct permissions if it exists
+    echo -e "  +  Setting icon file permissions...${RT}"
+    if [ -f "$INSTALL_DIR/$ICON_FILE" ]; then
+        sudo chmod 644 "$INSTALL_DIR/$ICON_FILE" || fail
+    else
+        echo -e "${RED}[E]${RT} Icon file not found: $INSTALL_DIR/$ICON_FILE"
+        fail
+    fi
+
+    # Display installation success message only if all steps completed successfully
+    echo -e "${LB}${GREEN}  ✔  Installation completed. You can now run 'sonda' from the terminal.${RT}"
 }
 
-# Create the installation directory in the user's local share if it doesn't exist
-mkdir -p "$INSTALL_DIR" || fail
+# Function to handle uninstallation
+uninstall_sonda() {
+    echo -e "  +  Starting uninstallation process...${RT}"
 
-# Copy the current working directory's content to the installation directory
-sudo cp -r "$PWD/." "$INSTALL_DIR" || fail
+    echo -e "  | "
 
-# Set proper permissions for the install directory (read/write/execute only for the user)
-chmod 700 "$INSTALL_DIR" || fail
+    # Remove the symbolic link from /usr/bin
+    echo -e "  +  Removing binary symlink...${RT}"
+    sudo rm -f "$USR_BIN/$BIN_NAME" || fail
 
-# Create a symbolic link to the installation directory in /usr/share (system-wide)
-sudo ln -sf "$INSTALL_DIR" "$USR_SHARE/sonda" || fail
+    echo -e "  | "
 
-# Ensure the binary exists before creating a symlink
-if [ -f "$INSTALL_DIR/bin/$LOCAL_BIN_NAME" ]; then
-    sudo ln -sf "$INSTALL_DIR/bin/$LOCAL_BIN_NAME" "$USR_BIN/$BIN_NAME" || fail
-    sudo chmod +x "$USR_BIN/$BIN_NAME" || fail
-else
-    echo -e "${RED}[E]${RT} Binary file not found: $INSTALL_DIR/bin/$LOCAL_BIN_NAME"
-    fail
-fi
+    # Remove the .desktop file
+    echo -e "  +  Removing .desktop file...${RT}"
+    sudo rm -f "/usr/share/applications/sonda.desktop" || fail
 
-# Install the .desktop file to make the application available in system menus
-if [ -f "$INSTALL_DIR/$DESKTOP_FILE" ]; then
-    sudo cp -f "$INSTALL_DIR/$DESKTOP_FILE" "/usr/share/applications" || fail
-else
-    echo -e "${RED}[E]${RT} .desktop file not found: $INSTALL_DIR/$DESKTOP_FILE"
-    fail
-fi
+    echo -e "  | "
 
-# Ensure the icon file has the correct permissions if it exists
-if [ -f "$INSTALL_DIR/$ICON_FILE" ]; then
-    sudo chmod 644 "$INSTALL_DIR/$ICON_FILE" || fail
-else
-    echo -e "${RED}[E]${RT} Icon file not found: $INSTALL_DIR/$ICON_FILE"
-    fail
-fi
+    # Remove the icon file
+    echo -e "  +  Removing icon file...${RT}"
+    sudo rm -f "$INSTALL_DIR/$ICON_FILE" || fail
 
-# Disable debug mode after the setup phase
-# set +x
+    echo -e "  | "
 
-# Install additional dependencies quietly
-sudo apt install -y lolcat inxi > /dev/null 2>&1 || fail
+    # Remove the symbolic link from /usr/share
+    echo -e "  +  Removing symbolic link from /usr/share...${RT}"
+    sudo rm -f "$USR_SHARE/sonda" || fail
 
-# Display installation success message only if all steps completed successfully
-echo -e "${LB}${GREEN} ✔ ${RT} Installation completed. You can now run 'sonda' from the terminal."
+    echo -e "  | "
+
+    # Remove the installation directory
+    echo -e "  +  Removing installation directory...${RT}"
+    rm -rf "$INSTALL_DIR" || fail
+
+    echo -e "${GREEN}  ✔  Uninstallation completed.${RT}"
+}
+
+# Main logic to parse the arguments
+case "$1" in
+    --install)
+        install_sonda
+        ;;
+    --uninstall)
+        uninstall_sonda
+        ;;
+    *)
+        echo -e "${RB}${RED}[E]${RT} Invalid argument. Use --install or --uninstall.${RT}"
+        exit 1
+        ;;
+esac

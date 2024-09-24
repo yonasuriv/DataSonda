@@ -7,45 +7,43 @@ LOCAL_VERSION_FILE="$VERSION/current"
 # Function to check for updates
 get_version() {
     if [ ! -f "$LOCAL_VERSION_FILE" ]; then
-        echo "Local version file not found!"
+        echo -e "${E} Local version file not found."
         exit 1
     fi
+    echo
 
     # Get the local version
     LOCAL_VERSION=$(cat "$LOCAL_VERSION_FILE")
-    echo "Local version: $LOCAL_VERSION"
 
     # Fetch the remote version from the repository
     REMOTE_VERSION=$(curl -s "$REPO_URL")
 
     if [ -z "$REMOTE_VERSION" ]; then
-        echo "Failed to retrieve remote version!"
+        echo -e "${E} Failed to retrieve remote version."
         exit 1
     fi
 
-    echo "Remote version: $REMOTE_VERSION"
-
     # Compare versions
     if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
-        echo "Your version is up-to-date!"
+        echo -e "${S} ${BLUE}sonda version${RT} $LOCAL_VERSION ${GREEN2}(running the latest version)${RT}"
     else
-        echo "A new version is available! Local: $LOCAL_VERSION, Remote: $REMOTE_VERSION"
+        echo -e "${W} ${BLUE}sonda version${RT} ${YELLOW2}$LOCAL_VERSION${RT} (upgradable to ${CYAN2}$REMOTE_VERSION${RT})"
     fi
 }
 
 # Function to update the repository
 get_update() {
-    # if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
-    #     echo "Your version is up-to-date!"
-    # else
-    #     echo "Updating repository..."
-    #     cd $INSTALLDIR
-    #     git pull origin main
-    # fi
-    echo "Updating repository..."
-    set -x
-    cd $INSTALLDIR
-    git config --global --add safe.directory $INSTALLDIR
-    #git pull origin main
-    set +x
+    if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
+        echo -e "${S} ${BLUE}sonda version${RT} $LOCAL_VERSION ${GREEN2}(you are running the latest version)${RT}"
+    else
+        echo -e "${W}  Updating..${LB}"
+        cd $INSTALLDIR
+        git config --global --add safe.directory $INSTALLDIR
+        git pull origin main 
+        if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
+            echo -e "${S} sonda upgraded successfully from $LOCAL_VERSION to $REMOTE_VERSION${LB}"
+        else
+            echo -e "${E} Upgrade failed. Please try again later or clear your GitHub cache."
+        fi
+    fi
 }
