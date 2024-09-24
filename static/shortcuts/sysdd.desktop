@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Nokturn
+Encoding=UTF-8
+Exec=nokturn
+Icon=/usr/share/sysdd/static/icons/sysdd.png
+StartupNotify=false
+Terminal=true
+Type=Application
+X-Kali-Package=nokt
+Comment=System Info Data Dump (ifconfig + hostnamectl on steroids)
+Path=/usr/bin/sysdd
