@@ -1,8 +1,28 @@
 #!/bin/bash
 
-#INSTALLDIR="/usr/share/sysdd"
-INSTALLDIR="$HOME/Downloads/sysdd"
+# Parse arguments before checking the value of LOCAL
+while [ $# -gt 0 ]; do
+  case "$1" in
+      --local)
+          LOCAL="YES"
+          shift 1 # Only shift 1 argument here since --local has no extra argument
+          continue
+          ;;
+      *)
+          echo -e "${LB}${RED} [E] Invalid Argument"
+          exit 1
+          ;;
+  esac
+done
 
+# Now check the value of LOCAL
+if [[ "$LOCAL" == "YES" ]]; then
+    INSTALLDIR="$(pwd)"
+else
+    INSTALLDIR="/usr/share/sysdd"
+fi
+
+# Script init
 set -a
 MODDIR="$INSTALLDIR/modules/functions"
 MODHEL="$INSTALLDIR/modules/functions/info"
