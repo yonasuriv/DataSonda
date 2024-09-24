@@ -191,8 +191,8 @@ function system_info {
         cpu_usage=$(mpstat | awk 'NR==4 {print "User: "$3 "%, System: "$5 "%, Idle: "$12 "%"}')
 
         memory_usage=$(free -h | awk 'NR==2 {print "Total: "$2 ", Used: "$3 ", Free: "$4 ", Available: "$7}')
-        echo -e "${DIM}[+] [CPU] $(mpstat | awk 'NR==4 {print "User: "$3 "%, System: "$5 "%, Idle: "$12 "%"}')${RT}" 
-        echo -e "${DIM}[+] [MEM] $(free -h | awk 'NR==2 {print "Total: "$2 ", Used: "$3 ", Free: "$4 ", Available: "$7}')${RT}"
+        echo -e " | ${DIM} CPU  $(mpstat | awk 'NR==4 {print "User: "$3 "%, System: "$5 "%, Idle: "$12 "%"}')${RT}" 
+        echo -e " | ${DIM} MEM  $(free -h | awk 'NR==2 {print "Total: "$2 ", Used: "$3 ", Free: "$4 ", Available: "$7}')${RT}"
         df -h | grep '^/dev/' | while read -r line; do
             device=$(echo "$line" | awk '{print $1}')
             used=$(echo "$line" | awk '{print $3}')
@@ -205,18 +205,18 @@ function system_info {
 
 
                 if [ "$usage" -ge 75 ]; then
-                    output="${MAGENTA}[+] [DSK]${RT} ${RED}[$device_name] Usage: $usage% ($total total, $used used, $available available)${RT}"
+                    output="${RED}[$device_name]${RT}${DIM} Usage: ${RED}$usage%${RT}${DIM} ($total total, $used used, $available available)${RT}"
                 elif [ "$usage" -ge 50 ]; then
-                    output="${MAGENTA}[+] [DSK]${RT} ${YELLOW}[$device_name] Usage: $usage% ($total total, $used used, $available available)${RT}"
+                    output="${YELLOW}[$device_name]${RT}${DIM} Usage: ${YELLOW}$usage%${RT}${DIM} ($total total, $used used, $available available)${RT}"
                 else
-                    output="${DIM}[+] [DSK] $device_name at $usage% ($total total, $used used, $available available)${RT}"
+                    output="$device_name at $usage% ($total total, $used used, $available available)${RT}"
                 fi
 
                 # Accumulate output and print two devices per line
                 if [ -z "$line1" ]; then
-                    line1="$output"
+                    line1=" | ${DIM} DSK  $output"
                 else
-                    echo -e "${line1}${output}"
+                    echo -e "${line1} ${output}"
                     line1=""  # Reset for the next pair
                 fi
             done
@@ -244,7 +244,7 @@ function system_info {
                 output+="$pkg, "
             else
                 # Accumulate the output with red color for not installed packages
-                output+="${CURSIVE}${STRIKETHROUGH}$pkg${RT}, "
+                output+="${CURSIVE}${UNDERLINE}$pkg${RT}, "
             fi
         done
 
@@ -362,9 +362,9 @@ function system_info {
 
     
     if [ "$total_pkg_update_count" -eq 0 ]; then
-        sys_status="${NKBRGREEN}SYSTEM UP TO DATE${RT}${RT}"
+        sys_status="${BLUE2}SYSTEM UP TO DATE${RT}${RT}"
     else
-        sys_status="${NKMAGENTA}UPDATE AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
+        sys_status="${PURPLE2}UPDATE AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
     fi 
 
     # REBOOT
@@ -373,7 +373,7 @@ function system_info {
     elif [[ "$uptime_days" -gt 3 ]]; then
         restart_recommended=$(echo -e "${YELLOW2}[RESTART RECOMMENDED]${RT}")
     else
-        restart_recommended="${CURSIVE}[*]${RT}"
+        restart_recommended="[*]"
     fi
 
     # UPDATE
@@ -382,25 +382,27 @@ function system_info {
     elif [[ "$DAYS" -ge 5 ]] && [[ "$DAYS" -le 14 ]]; then
         update_recommended=$(echo -e "${YELLOW2}[UPDATE RECOMMENDED] ${RT}")
     else
-        update_recommended="${CURSIVE}[*]${RT}"
+        update_recommended="[*]"
     fi
 
     # SCRIPT START
 
-    stats_cpu_mem_disk
+    
 
-    echo -e "${LB}${NEGATIVE}[#] System Information ${RT}     $net_status $sys_status ${DIM}${LB}"
+    echo -e "${LB}${WHITE2}[#] System Information ${RT}     $net_status $sys_status ${LB}"
 
+    echo -e "$update_recommended $(calculate_time_since_last_update) since the last system update."
+    echo -e " |  "
     echo -e " |  Kernel Version:         $kernel_version_full ($kernel_release)"   
     echo -e " |  Operating System:       $os_pretty_name $os_version" 
     echo -e " |  Distribution Type:      $distro_base"
     echo -e " |  Architecture:           $architecture"
-    echo -e " |  Hostname:               $hostname${LB}"
-
+    echo -e " |  Hostname:               $hostname"
+    echo -e " |"
     echo -e " |  Terminal Settings:      $terminal terminal with $shell ($shell_version) shell" 
     echo -e " |  Display Settings:       $desktop_environment desktop environment on $resolution resolution (WM: $wm, SM: $session_manager)"
-    echo -e " |  Theme Settings:         $theme GTK Theme (WM: $wm_theme, Icons: $icons)${LB}"
-
+    echo -e " |  Theme Settings:         $theme GTK Theme (WM: $wm_theme, Icons: $icons)"
+    echo -e " |"
     echo -e " |  GPU:                    $gpu_info"
     echo -e " |  CPU:                    $cpu_model ($cpu_cores cores @ $cpu_speed MHz, Cache: $cpu_cache)"
     echo -e " |  RAM:                    $total_memory Total ($available_memory available, $used_memory in use)"
@@ -408,12 +410,16 @@ function system_info {
     echo -e " |  Board:                  $board_name ($board_vendor)"
     echo -e " |  Hardware:               $hardware_model ($hardware_vendor)"
     echo -e " |  Firmware:               $full_firmware, release $firmware_date ($firmware_age months old)"
-    echo -e " |  System Identifier:      BOOT ID: $boot_id, MACHINE ID: $machine_id${LB}${RT}"
-
-    echo -e "${CURSIVE}[+]${RT} ${NKBRCYAN}$manual_pkgs${RT} packages installed by user, ${NKBRCYAN}$default_pkgs${RT} from OS, ${NKBRCYAN}$total_pkgs${RT} total / ${NKBRCYAN}$processes_start${RT} startup processes enabled, ${NKBRCYAN}$processes_running${RT} running (${NKBRCYAN}$services_running${RT} services)${RT}"
-    echo -e "${LB}${DIM}    Last installed:${RT}         $(lastipkgs)${RT}"
-   
-    echo -e "${LB}$restart_recommended $formatted_uptime since the last reboot."
-    echo -e "$update_recommended $(calculate_time_since_last_update) since the last system update.${LB}"
+    echo -e " |  System Identifier:      BOOT ID: $boot_id, MACHINE ID: $machine_id${RT}"
+    echo -e " |  "
+    echo -e "[+] ${NKBRCYAN}$manual_pkgs${RT} packages installed by user, ${NKBRCYAN}$default_pkgs${RT} from OS, ${NKBRCYAN}$total_pkgs${RT} total"
+    echo -e " | "
+    echo -e "[+] ${DIM}Last installed:${RT}         $(lastipkgs)"
+    echo -e "   "
+    echo -e "${WHITE2}[#] System Performance ${RT}    ${LB}"
+    echo -e "$restart_recommended $formatted_uptime since the last reboot."
+    echo -e " |  "
+    stats_cpu_mem_disk
+    echo -e " |  "
+    echo -e "[+] ${NKBRCYAN}$processes_start${RT} startup processes enabled, ${NKBRCYAN}$processes_running${RT} running (${NKBRCYAN}$services_running${RT} services)${RT}"
 }
-
