@@ -1,12 +1,13 @@
-# Define a log file to store the output
-LOGFILE="$HOME/Desktop/system_info_$(date +%d%m%y).log"
+savelog() {
+    # Define a log file to store the output
+    LOGFILE="$HOME/Desktop/system_info_$(date +%d%m%y).log"
 
-# Clear log file if it already exists
-> $LOGFILE
+    # Clear log file if it already exists
+    > $LOGFILE
 
-# Append detailed information about the log created
-echo "[i] File created on $(date '+%A, %B %d, %Y at %H:%M:%S %Z')" | cat - "$LOGFILE" > temp_file && mv temp_file "$LOGFILE"
-
+    # Append detailed information about the log created
+    echo "[i] File created on $(date '+%A, %B %d, %Y at %H:%M:%S %Z')" | cat - "$LOGFILE" > temp_file && mv temp_file "$LOGFILE"
+}
 
 # Variable to store the output modifier if --save is provided
 SOUT=""

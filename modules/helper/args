@@ -25,7 +25,6 @@ if [[ $# -eq 0 ]]; then
     # RUNwoh "general_system_info"
     # RUNwoh "distro_info"
     RUNwoh "system_info"
-    
 fi
 
 # Argument handling ${BLUE}(Updated to handle multiple arguments)
@@ -56,6 +55,10 @@ while [[ $# -gt 0 ]]; do
             fi
             shift # past argument
             shift # past value
+            ;;
+        --local)
+            INSTALLDIR="."
+            shift
             ;;
 
         -cpu)
@@ -153,6 +156,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --save)
+            savelog
             shift
             ;;
         --help|-h|-H)

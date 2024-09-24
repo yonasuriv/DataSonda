@@ -77,9 +77,24 @@ function system_info {
     # Fetch firmware date from /sys/class/dmi/id/bios_date
     firmware_date=$(cat /sys/class/dmi/id/bios_date)
 
-    # Calculate the age of the firmware in years and months
-    current_date=$(date +%Y-%m-%d)
-    firmware_age=$(echo "($(date -d "$current_date" +%s) - $(date -d "$firmware_date" +%s)) / (60*60*24*30.44)" | bc)
+    # Get the current date in seconds since the epoch
+    current_date_seconds=$(date +%s)
+
+    # Get the firmware date in seconds since the epoch
+    firmware_date_seconds=$(date -d "$firmware_date" +%s)
+
+    # Calculate the difference in seconds
+    seconds_diff=$((current_date_seconds - firmware_date_seconds))
+
+    # Perform floating-point division to convert seconds to months using awk
+    firmware_age_in_months=$(awk "BEGIN {print $seconds_diff / (60*60*24*30.44)}")
+
+    # Calculate years and remaining months
+    firmware_years=$(awk "BEGIN {print int($firmware_age_in_months / 12)}")
+    firmware_months=$(awk "BEGIN {print int($firmware_age_in_months % 12)}")
+
+    # Display the firmware age in years and months
+    firmware_age="$firmware_years y $firmware_months months"
 
     # [+] CATEGORY: Package Information
 
