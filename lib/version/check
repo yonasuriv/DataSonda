@@ -44,5 +44,6 @@ get_update() {
     # fi
     echo "Updating repository..."
     cd $INSTALLDIR
+    git config --global --add safe.directory $INSTALLDIR
     git pull origin main
 }
