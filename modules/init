@@ -61,6 +61,10 @@ function RUNwoh {
 
 # Script init
 set -a
+
+STATIC="$INSTALLDIR/static"
+MODULES="$INSTALLDIR/modules"
+
 MODDIR="$INSTALLDIR/modules/functions"
 MODHEL="$INSTALLDIR/modules/functions/info"
 MODLST="$INSTALLDIR/modules/functions/list"
@@ -70,9 +74,8 @@ STYLE="$INSTALLDIR/modules/style"
 HELPER="$INSTALLDIR/modules/helper"
 FUNCTIONS="$INSTALLDIR/modules/functions"
 
-
-source $STYLE/colors
-source $HELPER/top
+source $STATIC/palette/colors
+source $STATIC/files/top
 
 source $MODCOR/logic
 # source $MODCOR/sys_main
@@ -87,7 +90,8 @@ source $MODHEL/info_cpu
 source $MODHEL/info_kernel
 source $MODHEL/info_battery
 
-MAN="$HELPER/man"
+USAGE="$STATIC/files/man"
+
 set +a
 
 # First check if --save is the only argument
@@ -248,8 +252,8 @@ while [[ $# -gt 0 ]]; do
         #     shift
         #     ;;
         --help|-h|-H)
-            man_content=$(cat "$MAN")
-            echo -e "$man_content"
+            PRINT_USAGE=$(cat "$USAGE")
+            echo -e "$PRINT_USAGE"
             exit 0
             ;;
         *)

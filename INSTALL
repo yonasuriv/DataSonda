@@ -56,6 +56,6 @@ sudo sudo cp -Rf static/shortcuts/sysdd.desktop /usr/share/applications/sysdd.de
 # rm -rf $TEMP_DIR
 
 # Step 7. Install dependencies
-sudo apt install -y lolcat > /dev/null 2>&1
+sudo apt install -y lolcat inxi > /dev/null 2>&1
 
 echo -e "${LB}${GREEN} ✔ ${RT} Installation completed. You can now run 'sysdd' from the terminal."
