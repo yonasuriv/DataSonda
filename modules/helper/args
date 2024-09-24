@@ -33,8 +33,8 @@ while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         -net) # EXTERNAL CUSTOM SCRIPT
-            SYSNET="python $MODCOR/sys_net.py"
-            python $SYSNET
+            python $MODCOR/sys_net.py
+            
             # if [[ -f "${XBIN}/IPCONFIG" ]]; then
             #     eval "${SYSNET} ${SOUT}"
             #     shift
