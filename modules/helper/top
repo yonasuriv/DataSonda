@@ -1,0 +1,39 @@
+# Define a log file to store the output
+LOGFILE="$HOME/Desktop/system_info_$(date +%d%m%y).log"
+
+# Clear log file if it already exists
+> $LOGFILE
+
+# Append detailed information about the log created
+echo "[i] File created on $(date '+%A, %B %d, %Y at %H:%M:%S %Z')" | cat - "$LOGFILE" > temp_file && mv temp_file "$LOGFILE"
+
+
+# Variable to store the output modifier if --save is provided
+SOUT=""
+PRETTYP=""
+
+# Function to print in yellow for sudo commands skipped
+function print_sudo_skipped {
+    echo -e "${LB}${YELLOW}[!] ${1} skipped as it requires elevated privileges (sudo).${RT}"
+}
+
+function pprint {
+    local command="$1"
+    if [[ -n "$PRETTYP" ]]; then
+        # Run the command and strip any color codes (ANSI escape sequences)
+        echo -e "${DIM}${WHITE}$(eval $command | sed 's/\x1b\[[0-9;]*m//g') ${RT}"
+    else
+        eval "$command"
+    fi
+}
+
+# Wrapper function to handle saving output if --save is present
+function RUNwoh {
+    # Run with output handling
+    local function_name=$1
+    if [[ -n "$SOUT" ]]; then
+        eval "$function_name | tee /dev/tty | sed 's/\x1b\[[0-9;]*m//g' >> $LOGFILE"
+    else
+        eval "$function_name"
+    fi
+}

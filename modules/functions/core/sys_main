@@ -1,0 +1,389 @@
+function system_info {
+    
+    # Define helper function to safely read system files
+    read_system_file() {
+        local file_path="$1"
+        if [[ -r "$file_path" ]]; then
+            cat "$file_path"
+        else
+            echo "Unknown"
+        fi
+    }
+
+    # [+] CATEGORY: System Information
+
+    # Fetch the hostname from /etc/hostname
+    hostname=$(cat /etc/hostname)
+
+    # Fetch static hostname from /proc/sys/kernel/hostname
+    static_hostname=$(cat /proc/sys/kernel/hostname)
+
+    # Fetch distribution information from /etc/os-release
+    os_name=$(grep "^NAME=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+    os_version=$(grep "^VERSION=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+    os_pretty_name=$(grep "^PRETTY_NAME=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+
+    # Fetch distribution type (ID) and parent distribution (ID_LIKE)
+    distro_type=$(grep "^ID=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+    distro_base=$(grep "^ID_LIKE=" /etc/os-release | cut -d '=' -f2 | tr -d '"')
+
+    # Fetch architecture from uname
+    architecture=$(uname -m)
+
+    # Fetch deployment environment (if available)
+    deployment_env=$(read_system_file "/sys/class/dmi/id/product_family")
+
+    # Fetch system uptime in a human-readable format (using /proc/uptime)
+    uptime_seconds=$(cat /proc/uptime | awk '{print $1}')
+    uptime_days=$(echo "$uptime_seconds/86400" | bc)
+    uptime_hours=$(echo "($uptime_seconds%86400)/3600" | bc)
+    uptime_minutes=$(echo "($uptime_seconds%3600)/60" | bc)
+    formatted_uptime="${uptime_days} days, ${uptime_hours} hours, ${uptime_minutes} minutes"
+
+    # [+] CATEGORY: Kernel Information
+
+    # Fetch kernel name and version
+    kernel_name=$(uname -s)
+    kernel_version=$(cat /proc/version | awk '{print $3}')
+    kernel_release=$(cat /proc/sys/kernel/osrelease)
+    kernel_version_full=$(cat /proc/sys/kernel/version)
+
+    # [+] CATEGORY: Hardware Information
+
+    # Fetch CPU model and details from /proc/cpuinfo
+    cpu_model=$(grep -m 1 'model name' /proc/cpuinfo | cut -d ':' -f2 | xargs)
+    cpu_cores=$(grep -c '^processor' /proc/cpuinfo)
+    cpu_speed=$(grep -m 1 'cpu MHz' /proc/cpuinfo | cut -d ':' -f2 | xargs)
+    cpu_cache=$(grep -m 1 'cache size' /proc/cpuinfo | cut -d ':' -f2 | xargs)
+
+    # Fetch GPU model information
+    gpu_info=$(lspci | grep -i vga | cut -d ':' -f3 | xargs)
+
+    # Fetch Audio model information
+    audio_info=$(lspci | grep -i audio | cut -d ':' -f3 | xargs)
+
+    # Fetch hardware vendor and model from /sys/class/dmi/id
+    hardware_vendor=$(read_system_file "/sys/class/dmi/id/sys_vendor")
+    hardware_model=$(read_system_file "/sys/class/dmi/id/product_name")
+
+    # Fetch chassis type from /sys/class/dmi/id/chassis_type or chassis_vendor if available
+    chassis_type=$(read_system_file "/sys/class/dmi/id/chassis_type")
+    chassis_vendor=$(read_system_file "/sys/class/dmi/id/chassis_vendor")
+
+    # Fetch firmware version from /sys/class/dmi/id/bios_version
+    firmware_version=$(read_system_file "/sys/class/dmi/id/bios_version")
+
+    # Fetch firmware date from /sys/class/dmi/id/bios_date
+    firmware_date=$(cat /sys/class/dmi/id/bios_date)
+
+    # Calculate the age of the firmware in years and months
+    current_date=$(date +%Y-%m-%d)
+    firmware_age=$(echo "($(date -d "$current_date" +%s) - $(date -d "$firmware_date" +%s)) / (60*60*24*30.44)" | bc)
+
+    # [+] CATEGORY: Package Information
+
+    # Fetch total installed packages
+    total_pkgs="$(dpkg -l | cat | wc -l)"
+
+    # Fetch the list of manually installed packages (those installed by the user)
+    manual_pkgs=$(apt-mark showmanual | wc -l)
+
+    # Fetch the list of all installed packages
+    all_pkgs=$(dpkg-query -Wf '${Package}\n')
+
+    # Fetch the list of packages that were auto-installed (dependencies)
+    auto_pkgs=$(apt-mark showauto | wc -l)
+
+    # Calculate default packages as the difference between total and manually installed ones
+    default_pkgs=$(($total_pkgs - $manual_pkgs))
+
+    # [+] CATEGORY: Processes and Services
+
+    # Count running services (excluding headers and blank lines)
+    services_running="$(systemctl list-units --type=service --state=running | grep '.service' | wc -l)"
+
+    # Count running processes (excluding the header)
+    processes_running="$(($(ps aux | wc -l) - 1))"
+
+    # Count services enabled to start at boot
+    processes_start="$(systemctl list-unit-files --state=enabled --type=service --no-pager | grep '.service' | wc -l)"
+
+    # [+] CATEGORY: Desktop and Display Information
+
+    # Fetch desktop environment with version
+    desktop_environment=$(xfce4-session --version 2>/dev/null | grep -oP 'Xfce\s[0-9]+\.[0-9]+' | head -n1)
+    [[ -z "$desktop_environment" ]] && desktop_environment=$(echo "$XDG_CURRENT_DESKTOP")
+    [[ -z "$desktop_environment" ]] && desktop_environment="N/A"
+
+    # Fetch window manager (WM)
+    wm=$(ps -e | grep -E 'xfwm4|mutter|kwin|openbox|i3|awesome|sway|xmonad|icewm' | awk '{print $4}' | head -n1)
+    [[ -z "$wm" ]] && wm="N/A"
+
+    # Fetch session manager
+    session_manager=$(wmctrl -m 2>/dev/null | grep "Name:" | awk '{print $2}')
+    [[ -z "$session_manager" ]] && session_manager=$(echo "$XDG_SESSION_DESKTOP")
+    [[ -z "$session_manager" ]] && session_manager="N/A"
+
+    # Fetch screen resolution
+    resolution=$(xrandr | grep '*' | awk '{print $1}' | head -n1)
+    [[ -z "$resolution" ]] && resolution="N/A"
+
+    # Fetch desktop theme, icons, terminal, and WM theme
+    theme=$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'" || echo "N/A")
+    icons=$(gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | tr -d "'" || echo "N/A")
+    wm_theme=$(gsettings get org.gnome.desktop.wm.preferences theme 2>/dev/null | tr -d "'" || echo "N/A")
+
+    # Correct terminal emulator information
+    terminal=$(readlink /etc/alternatives/x-terminal-emulator 2>/dev/null | xargs basename || echo "N/A")
+
+    # Fetch shell and its version
+    shell=$(basename "$SHELL")
+    shell_version=$("$SHELL" --version 2>/dev/null | grep -oP '\d+\.\d+' | head -n1)
+    [[ -z "$shell_version" ]] && shell_version="N/A"
+
+    # [+] CATEGORY: Disk and Filesystem Information
+
+    # Fetch disk information
+    total_disk=$(df --total -BG | grep 'total' | awk '{print $2}' | sed 's/G//')
+    used_disk=$(df --total -BG | grep 'total' | awk '{print $3}' | sed 's/G//')
+    available_disk=$(df --total -BG | grep 'total' | awk '{print $4}' | sed 's/G//')
+
+    # Fetch the most used filesystem
+    most_used_fs=$(df -h | grep -vE '^Filesystem|tmpfs|cdrom' | sort -k 5 -r | head -n 1) && usage_percent=$(echo "$most_used_fs" | awk '{print $5}' | sed 's/%//') && color=$( [ "$usage_percent" -ge 80 ] && echo "$RED" || ([ "$usage_percent" -ge 40 ] && echo "$YELLOW" || echo "$RT") )
+    most_used_fs_size="$(echo "$most_used_fs" | awk '{print $1}') (${color}${usage_percent}% used${RT})"
+
+    # [+] CATEGORY: Memory Information
+
+    # Fetch total memory (RAM)
+    total_memory=$(grep MemTotal /proc/meminfo | awk '{print $2 / 1024 " MB"}')
+
+    # Fetch available memory
+    available_memory=$(grep MemAvailable /proc/meminfo | awk '{print $2 / 1024 " MB"}')
+
+    # Calculate used memory
+    used_memory=$(awk '/MemTotal/{total=$2} /MemAvailable/{available=$2} END {print (total-available) / 1024 " MB"}' /proc/meminfo)
+
+    # [+] CATEGORY: System Identifiers
+
+    # Fetch machine ID
+    machine_id=$(cat /etc/machine-id)
+
+    # Fetch boot ID
+    boot_id=$(cat /proc/sys/kernel/random/boot_id)
+
+    stats_cpu_mem_disk() {
+        cpu_usage=$(mpstat | awk 'NR==4 {print "User: "$3 "%, System: "$5 "%, Idle: "$12 "%"}')
+
+        memory_usage=$(free -h | awk 'NR==2 {print "Total: "$2 ", Used: "$3 ", Free: "$4 ", Available: "$7}')
+        echo -e "${DIM}[+] [CPU] $(mpstat | awk 'NR==4 {print "User: "$3 "%, System: "$5 "%, Idle: "$12 "%"}')${RT}" 
+        echo -e "${DIM}[+] [MEM] $(free -h | awk 'NR==2 {print "Total: "$2 ", Used: "$3 ", Free: "$4 ", Available: "$7}')${RT}"
+        df -h | grep '^/dev/' | while read -r line; do
+            device=$(echo "$line" | awk '{print $1}')
+            used=$(echo "$line" | awk '{print $3}')
+            available=$(echo "$line" | awk '{print $4}')
+            total=$(echo "$line" | awk '{print $2}')
+            usage=$(echo "$line" | awk '{print $5}' | sed 's/%//') # Remove % symbol
+
+            # Extract the last segment of the device path for display
+            device_name=$(basename "$device")
+
+
+                if [ "$usage" -ge 75 ]; then
+                    output="${MAGENTA}[+] [DSK]${RT} ${RED}[$device_name] Usage: $usage% ($total total, $used used, $available available)${RT}"
+                elif [ "$usage" -ge 50 ]; then
+                    output="${MAGENTA}[+] [DSK]${RT} ${YELLOW}[$device_name] Usage: $usage% ($total total, $used used, $available available)${RT}"
+                else
+                    output="${DIM}[+] [DSK] $device_name at $usage% ($total total, $used used, $available available)${RT}"
+                fi
+
+                # Accumulate output and print two devices per line
+                if [ -z "$line1" ]; then
+                    line1="$output"
+                else
+                    echo -e "${line1}${output}"
+                    line1=""  # Reset for the next pair
+                fi
+            done
+
+        # If there is one leftover device (odd number of devices), print it
+        if [ -n "$line1" ]; then
+            echo -e "$line1"
+        fi
+    }
+
+    #######
+    current_date=$(date +"%d-%m-%Y %H:%M:%S")
+
+    # Function to get the last 3 installed packages
+    last_installed_pkgs=$(grep "install " /var/log/apt/history.log | tail -3 | awk '{print $4}' | paste -sd ',' | sed 's/,/, /g')
+
+    # Function to check if OS upgrades are available
+    check_os_upgrade_available() {
+        if command -v apt &> /dev/null; then
+            UPGRADABLE_PACKAGES=$(apt list --upgradable 2> /dev/null | grep -v "Listing...")
+            if [ -z "$UPGRADABLE_PACKAGES" ]; then
+                echo "System is up to date."
+            else
+                # echo "OS upgrades available:"
+                echo "$UPGRADABLE_PACKAGES"
+            fi
+        else
+            echo "OS upgrade check unavailable for this system."
+        fi
+    }
+
+    # Get number of packages available to be upgraded
+    UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -v "Listing..." | wc -l)
+
+    # Get number of security updates available
+    SECURITY_UPDATES=$(apt-get -s upgrade | grep "^Inst" | grep -i security | wc -l)
+
+    # Format upgradable packages with singular/plural
+    if [ "$UPGRADABLE" -gt 1 ]; then
+        upgradable_formatted="$UPGRADABLE packages"
+    elif [ "$UPGRADABLE" -eq 1 ]; then
+        upgradable_formatted="$UPGRADABLE package"
+    else
+        upgradable_formatted="no packages"
+    fi
+
+    # Format security updates with singular/plural
+    if [ "$SECURITY_UPDATES" -gt 1 ]; then
+        security_updates_formatted="$SECURITY_UPDATES security updates"
+    elif [ "$SECURITY_UPDATES" -eq 1 ]; then
+        security_updates_formatted="$SECURITY_UPDATES security update"
+    else
+        security_updates_formatted="no security updates"
+    fi
+
+    # Calculate total updates (upgradable + security)
+    total_pkg_update_count=$(($UPGRADABLE + $SECURITY_UPDATES))
+
+    # Function to calculate time since the last update
+    calculate_time_since_last_update() {
+        if [ "$LAST_UPDATE_DATE" != "Unavailable" ]; then
+            CURRENT_TIMESTAMP=$(date +%s)
+            LAST_UPDATE_TIMESTAMP=$(date -d "$LAST_UPDATE_DATE" +%s)
+            TIME_DIFF=$((CURRENT_TIMESTAMP - LAST_UPDATE_TIMESTAMP))
+
+            # Calculate days, hours, and minutes
+            DAYS=$((TIME_DIFF / 86400))  # 86400 seconds in a day
+            HOURS=$(((TIME_DIFF % 86400) / 3600))  # Remaining seconds converted to hours
+            MINUTES=$(((TIME_DIFF % 3600) / 60))  # Remaining seconds converted to minutes
+
+            # Set color based on the number of days
+            color=$( [ "$DAYS" -ge 15 ] && echo "$RED" || ([ "$DAYS" -ge 5 ] && echo "$YELLOW" || echo "$RT") )
+
+            # Output the formatted result with the appropriate color
+            formatted_output="${color}${DAYS} days, $HOURS hours, $MINUTES minutes${RT}"
+            echo -e "$formatted_output"
+        else
+            echo "Unable to calculate time since last update."
+        fi
+    }
+
+    firmware_type="$([ -d /sys/firmware/efi ] && echo "UEFI" || echo "BIOS")"
+    firmware_vendor="$(cat /sys/class/dmi/id/bios_vendor)"
+    firmware_version="$(cat /sys/class/dmi/id/bios_version)"
+    firmware_release="$(cat /sys/class/dmi/id/bios_release)"
+
+    full_firmware="$firmware_type version $firmware_version, revision $firmware_release"
+
+    board_name="$(cat /sys/class/dmi/id/board_name)"
+    board_vendor="$(cat /sys/class/dmi/id/board_vendor)"
+
+    # Function to display partition details in the requested format
+    get_disk() {
+        print_partition_custom() {
+            local device=$1
+            local mountpoint=$2
+
+            # Extract the last segment of the device path
+            device_name=$(basename "$device")
+
+            # Get the total size, available space, and usage percentage
+            total=$(df -h "$device" 2>/dev/null | awk 'NR==2 {print $2}')
+            available=$(df -h "$device" 2>/dev/null | awk 'NR==2 {print $4}')
+            percent_used=$(df -h "$device" 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//')  # Remove the percentage sign
+
+        
+            color=$( [ "$percent_used" -ge 15 ] && echo "$RED" || ([ "$percent_used" -ge 5 ] && echo "$YELLOW" || echo "$RT") )
+
+            # Print the formatted information with color
+            echo -e "$device_name has $available available out of $total (${color}${percent_used}%${RT})"
+        }
+
+        # Identify Boot, Root, and Most Used Filesystem
+        root_device=$(findmnt -nro SOURCE /)
+
+        # Print Root details in the requested format
+        [ -n "$root_device" ] && print_partition_custom "$root_device" "/"
+    }
+    # echo -e "==================== Detailed System Information ====================="
+    # echo -e "${WHITE2}[+] System Information${RT}"
+    
+    # $current_date 
+    echo ""
+    # echo -e " |  Main Partition $(get_disk)"
+    net_status=$(ping -c 1 1.1.1.1 > /dev/null 2>&1 && echo -e "${GREEN2}${RT}${GREEN}NETWORK CONNECTED${RT}" || echo -e "${RED2}${RT} ${RED}Disconnected${RT}")
+    # echo -e "$net_status"
+    
+    if [ "$total_pkg_update_count" -ge 15 ]; then
+        sys_status="${NKBRRED}$total_pkg_update_count updates available ${RT}${DIM}($upgradable_formatted, $security_updates_formatted) ${DIM}(last installed packages: $last_installed_pkgs.)${RT}"
+    elif [ "$total_pkg_update_count" -eq 0 ]; then
+        sys_status="${NKBRGREEN}System is up to date ${RT}(last installed packages: $last_installed_pkgs.)${RT}"
+    else
+        # sys_status="${NKBRYELLOW}$total_pkg_update_count updates available ${RT}${DIM}    ($upgradable_formatted, $security_updates_formatted) ${DIM}(last installed: $last_installed_pkgs)${RT}"
+        sys_status="${NKMAGENTA}NEW UPDATES AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
+    fi 
+
+    # REBOOT
+    if [[ "$uptime_days" -ge 6 ]]; then
+        restart_recommended=$(echo -e "${RED2}[RESTART RECOMMENDED]${RT}")
+    elif [[ "$uptime_days" -gt 3 ]]; then
+        restart_recommended=$(echo -e "${YELLOW2}[RESTART RECOMMENDED]${RT}")
+    else
+        restart_recommended="${CURSIVE}[*]${RT}"
+    fi
+
+    # UPDATE
+    if [[ "$DAYS" -ge 15 ]]; then
+        update_recommended=$(echo -e "${RED2}[UPDATE RECOMMENDED] ${RT}")
+    elif [[ "$DAYS" -ge 5 ]] && [[ "$DAYS" -le 14 ]]; then
+        update_recommended=$(echo -e "${YELLOW2}[UPDATE RECOMMENDED] ${RT}")
+    else
+        update_recommended="${CURSIVE}[*]${RT}"
+    fi
+
+    # SCRIPT START
+
+    stats_cpu_mem_disk
+
+    echo -e "${LB}${NEGATIVE}[#] System Information ${RT}     $net_status $sys_status ${DIM}${LB}"
+
+    echo -e " |  Kernel Version:         $kernel_version_full ($kernel_release)"   
+    echo -e " |  Operating System:       $os_pretty_name $os_version" 
+    echo -e " |  Distribution Type:      $distro_base"
+    echo -e " |  Architecture:           $architecture"
+    echo -e " |  Hostname:               $hostname${LB}"
+
+    echo -e " |  Terminal Settings:      $terminal terminal with $shell ($shell_version) shell" 
+    echo -e " |  Display Settings:       $desktop_environment desktop environment on $resolution resolution (WM: $wm, SM: $session_manager)"
+    echo -e " |  Theme Settings:         $theme GTK Theme (WM: $wm_theme, Icons: $icons)${LB}"
+
+    echo -e " |  GPU:                    $gpu_info"
+    echo -e " |  CPU:                    $cpu_model ($cpu_cores cores @ $cpu_speed MHz, Cache: $cpu_cache)"
+    echo -e " |  RAM:                    $total_memory Total ($available_memory available, $used_memory in use)"
+    echo -e " |  Audio:                  $audio_info"
+    echo -e " |  Board:                  $board_name ($board_vendor)"
+    echo -e " |  Hardware:               $hardware_model ($hardware_vendor)"
+    echo -e " |  Firmware:               $full_firmware, release $firmware_date ($firmware_age months old)"
+    echo -e " |  System Identifier:      BOOT ID: $boot_id, MACHINE ID: $machine_id${LB}${RT}"
+
+    echo -e "${CURSIVE}[+]${RT} ${NKBRCYAN}$manual_pkgs${RT} packages installed by user, ${NKBRCYAN}$default_pkgs${RT} from OS, ${NKBRCYAN}$total_pkgs${RT} total / ${NKBRCYAN}$processes_start${RT} startup processes enabled, ${NKBRCYAN}$processes_running${RT} running (${NKBRCYAN}$services_running${RT} services)${RT}"
+    echo -e "${LB}${DIM}    Last installed: $last_installed_pkgs${RT}"
+   
+    echo -e "${LB}$restart_recommended $formatted_uptime since the last reboot."
+    echo -e "$update_recommended $(calculate_time_since_last_update) since the last system update.${LB}"
+}
+

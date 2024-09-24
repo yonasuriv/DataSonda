@@ -1,0 +1,202 @@
+# First check if --save is the only argument
+if [[ "$#" -eq 1 && "$1" == "--save" ]]; then
+    # Set SOUT to enable saving
+    SOUT="| tee /dev/tty | sed 's/\x1b\[[0-9;]*m//g' >> $LOGFILE"
+    
+    # Run default functions (distro_info and system_info_hostnamectl)
+    # RUNwoh "general_system_info"
+    # RUNwoh "distro_info"
+    RUNwoh "system_info"
+
+# Otherwise, handle other cases (including --save combined with other arguments)
+else
+    for arg in "$@"; do
+        if [[ "$arg" == "--pretty" ]]; then
+            PRETTYP="true"
+        elif [[ "$arg" == "--save" ]]; then
+            SOUT="| tee /dev/tty | sed 's/\x1b\[[0-9;]*m//g' >> $LOGFILE"
+            break
+        fi
+    done
+fi
+
+# Check if no arguments are provided
+if [[ $# -eq 0 ]]; then
+    # RUNwoh "general_system_info"
+    # RUNwoh "distro_info"
+    RUNwoh "system_info"
+    
+fi
+
+# Argument handling ${BLUE}(Updated to handle multiple arguments)
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -net) # EXTERNAL CUSTOM SCRIPT
+            SYSNET="python $MODCOR/sys_net.py"
+            python $SYSNET
+            # if [[ -f "${XBIN}/IPCONFIG" ]]; then
+            #     eval "${SYSNET} ${SOUT}"
+            #     shift
+            # else
+            #     echo -e "${RED}[E]${Rt} IPCONFIG is not installed. Get it at @yonasuriv github"
+            #     exit 1
+            # fi
+            exit 0
+            ;;        
+        -v)
+            VLEVEL="$2"
+            if [[ "$VLEVEL" =~ ^[1-8]$ ]]; then
+                VLEVEL="-v $2"
+                RUNwoh "complete_system_info"
+            else
+                echo -e "${LB}${RED}[E]${RT} The verbosity value must be between 1 and 8. Running default (1)."
+                VLEVEL="-v 1"
+                RUNwoh "complete_system_info"
+            fi
+            shift # past argument
+            shift # past value
+            ;;
+
+        -cpu)
+            RUNwoh "cpu_info"
+            shift
+            ;;
+        -mem)
+            RUNwoh "memory_info"
+            RUNwoh "detailed_memory_info"
+            shift
+            ;;
+        -disks)
+            RUNwoh "disk_storage_info"
+            shift
+            ;;
+        -devices)
+            RUNwoh "pci_devices"
+            RUNwoh "usb_devices"
+            shift
+            ;;
+        -networks)
+            RUNwoh "network_info"
+            RUNwoh "network_connections"
+            shift
+            ;;
+        -kernel)
+            RUNwoh "kernel_boot_params"
+            RUNwoh "kernel_modules"
+            shift
+            ;;
+        -gpu)
+            RUNwoh "graphics_info"
+            shift
+            ;;
+        -battery)
+            RUNwoh "battery_info"
+            shift
+            ;;
+        -pkgs)
+            RUNwoh "installed_packages"
+            shift
+            ;;
+        -distro)
+            RUNwoh "distro_info"
+            shift
+            ;;
+        --all-short|-all)
+            #RUNwoh "general_system_info" 
+            #RUNwoh "distro_info" 
+            #RUNwoh "system_info_hostnamectl"
+            RUNwoh "system_info"
+            RUNwoh "complete_system_info"
+            RUNwoh "kernel_boot_params" 
+            RUNwoh "kernel_modules" 
+            RUNwoh "battery_info" 
+            RUNwoh "cpu_info" 
+            RUNwoh "graphics_info" 
+            RUNwoh "memory_info" 
+            RUNwoh "detailed_memory_info" 
+            RUNwoh "disk_storage_info" 
+            RUNwoh "pci_devices" 
+            RUNwoh "usb_devices" 
+            RUNwoh "network_info" 
+            RUNwoh "network_connections" 
+            RUNwoh "installed_packages" 
+            shift
+            ;;
+        --all-detailed|-ald)
+            # RUNwoh "distro_info" 
+            # RUNwoh "system_info_hostnamectl"
+            # RUNwoh "general_system_info"
+            RUNwoh "system_info"
+            RUNwoh "complete_system_info"
+            RUNwoh "kernel_boot_params"
+            RUNwoh "kernel_modules"
+            RUNwoh "battery_info"
+            RUNwoh "cpu_info"
+            RUNwoh "graphics_info"
+            RUNwoh "memory_info"
+            RUNwoh "detailed_memory_info"
+            RUNwoh "disk_storage_info"
+            RUNwoh "pci_devices"
+            RUNwoh "usb_devices"
+            RUNwoh "network_info"
+            RUNwoh "network_connections"
+            RUNwoh "installed_packages"
+            
+            shift
+            ;;
+        -check)
+            RUNwoh "system_recommended"
+            exit 0
+            ;;
+        --pretty)
+            shift
+            ;;
+        --save)
+            shift
+            ;;
+        --help|-h|-H)
+            echo -e """
+    Usage: $0 [options]
+
+    Options:
+
+        -all             Show all information (long output)
+        -ald             Show all detailed information (very long output)
+
+        -pkgs            Show all installed packages
+
+        -v               Show more system information
+        -vv              Show complete system information
+        
+        -kernel          Show kernel boot parameters and loaded modules
+        -battery         Show battery information
+        -distro          Show distribution information
+        -cpu             Show CPU information
+        -gpu             Show GPU and graphics information
+        -mem*            Show memory information (requires sudo for detailed memory info)$
+        -disks*          Show disk and storage information (requires sudo for detailed partition info)
+        -devices         Show PCI and USB devices information
+        -networks        Show network interfaces and active connections
+
+        -net             ifconfig + ipconfig 2.0 (requires @yonasuriv ipconfig)
+
+        -check           Check required/recommended system dependencies
+
+        --save           Save output to log file
+
+            """
+            exit 0
+            ;;
+        *)
+            echo -e "${LB}${RED}[E]${RT} One or more arguments are invalid. Use $0 --help to see all available commands."
+            exit 1
+            ;;
+    esac
+done
+
+# Output result based on whether --save was used
+if [[ -n "$SOUT" ]]; then
+    echo -e "${LB}${GREEN}[✔] System information gathered successfully. Check $LOGFILE for details.${RT}"
+fi
+

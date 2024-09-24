@@ -1,0 +1,31 @@
+#!/bin/bash
+
+INSTALLDIR="/usr/bin/share/sysdd"
+
+set -a
+MODDIR="$INSTALLDIR/functions"
+MODHEL="$INSTALLDIR/functions/info"
+MODLST="$INSTALLDIR/functions/list"
+MODCOR="$INSTALLDIR/functions/core"
+
+STYLE="$INSTALLDIR/modules/style"
+HELPER="$INSTALLDIR/modules/helper"
+FUNCTIONS="$INSTALLDIR/modules/functions"
+set +x
+
+source $STYLE/colors
+source $STYLE/top
+
+source $MODCOR/sys_main
+source $MODCOR/sys_check
+source $MODLST/installed_packages
+source $MODHEL/info_networks
+source $MODHEL/info_devices
+source $MODHEL/info_gpu
+source $MODHEL/info_disks
+source $MODHEL/info_sys
+source $MODHEL/info_cpu
+source $MODHEL/info_kernel
+source $MODHEL/info_battery
+
+source helper/args
