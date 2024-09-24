@@ -7,11 +7,13 @@ RED="\033[0;31m"
 CYAN="\033[0;36m"
 
 # Define variables
-REPO_URL="https://github.com/yonasuriv/sysdd"
-SHARED_DIR="/usr/share/sysdd"
+REPO_URL="https://github.com/yonasuriv/sonda"
+SHARED_DIR="/usr/share/sonda"
 BIN_DIR="/usr/bin"
-BIN_RAW="init"
-BIN_NAME="sysdd"
+BIN_NAME="sonda"
+BIN_LOCALNAME="init"
+BIN_LOCALPATH="$SHARED_DIR/modules/core/$BIN_LOCALNAME"
+
 TEMP_DIR=$(mktemp -d)
 
 # Ensure the script is run with sudo/root permissions
@@ -38,18 +40,18 @@ fi
 sudo mkdir -p $SHARED_DIR
 sudo cp -rf "$(pwd)/." "$SHARED_DIR"
 
-# Step 4: Check if the binary exists in modules/$BIN_RAW
-if [ ! -f "$SHARED_DIR/modules/$BIN_RAW" ]; then
-  echo -e "${RED}[E]${RT} The $BIN_RAW binary was not found in $SHARED_DIR/modules. Please ensure it is built correctly."
+# Step 4: Check if the binary exists in modules/$BIN_LOCALNAME
+if [ ! -f "$BIN_LOCALPATH" ]; then
+  echo -e "${RED}[E]${RT} The $BIN_LOCALNAME binary was not found in $SHARED_DIR/modules. Please ensure it is built correctly."
   exit 1
 fi
 
-# Step 5: Move the binary to /usr/bin and rename to sysdd
+# Step 5: Move the binary to /usr/bin and rename to sonda
 echo -e "${CYAN}   ${RT} Installing binary as $BIN_NAME to $BIN_DIR..."
-sudo cp $SHARED_DIR/modules/$BIN_RAW $BIN_DIR/$BIN_NAME || { echo -e "${RED}[E]${RT} Failed to copy binary to /usr/bin."; exit 1; }
+sudo cp $BIN_LOCALPATH $BIN_DIR/$BIN_NAME || { echo -e "${RED}[E]${RT} Failed to copy binary to /usr/bin."; exit 1; }
 sudo chmod +x $BIN_DIR/$BIN_NAME
 
-sudo sudo cp -Rf static/shortcuts/sysdd.desktop /usr/share/applications/sysdd.desktop
+sudo sudo cp -Rf static/shortcuts/sonda.desktop /usr/share/applications/sonda.desktop
 
 # # Step 6: Clean up
 # echo -e "${CYAN}   ${RT} Cleaning up temporary files..."
@@ -58,4 +60,4 @@ sudo sudo cp -Rf static/shortcuts/sysdd.desktop /usr/share/applications/sysdd.de
 # Step 7. Install dependencies
 sudo apt install -y lolcat inxi > /dev/null 2>&1
 
-echo -e "${LB}${GREEN} ✔ ${RT} Installation completed. You can now run 'sysdd' from the terminal."
+echo -e "${LB}${GREEN} ✔ ${RT} Installation completed. You can now run 'sonda' from the terminal."

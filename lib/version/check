@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-REPO_URL="https://raw.githubusercontent.com/yonasuriv/sonda/refs/heads/main/static/version/current"
+REPO_URL="https://raw.githubusercontent.com/yonasuriv/sonda/refs/heads/main/lib/version/current"
 LOCAL_VERSION_FILE="$VERSION/current" 
 
 # Function to check for updates
@@ -41,10 +41,10 @@ version_update() {
 
 # Handle script arguments
 case "$1" in
-    --version)
+    -v)
         version_check
         ;;
-    --update)
+    -u)
         version_update
         ;;
     *)

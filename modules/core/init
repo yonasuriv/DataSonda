@@ -15,7 +15,7 @@
 if [[ "$LOCAL" == "YES" ]]; then
     INSTALLDIR="$(pwd)"
 else
-    INSTALLDIR="/usr/share/sysdd"
+    INSTALLDIR="/usr/share/sonda"
 fi
 
 savelog() {
