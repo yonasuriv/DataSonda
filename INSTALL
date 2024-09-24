@@ -10,6 +10,7 @@ CYAN="\033[0;36m"
 REPO_URL="https://github.com/yonasuriv/sysdd"
 SHARED_DIR="/usr/share/sysdd"
 BIN_DIR="/usr/bin"
+BIN_RAW="init"
 BIN_NAME="sysdd"
 TEMP_DIR=$(mktemp -d)
 
@@ -20,36 +21,39 @@ else
     echo -ne "${LB}${RED}[E]${RT} This script must be run as root. Please enter your "; sudo -v || { echo -e "${RED}[E]${RT} Operation cancelled."; exit 1; }
 fi
 
-# Step 1: Download the repository
-echo -e "${LB}${CYAN}   ${RT} Cloning the repository from $REPO_URL into $TEMP_DIR..."
-git clone $REPO_URL $TEMP_DIR 2>/dev/null || { echo -e "${RED}[E]${RT} Failed to clone repository."; exit 1; }
+# # Step 1: Download the repository
+# echo -e "${LB}${CYAN}   ${RT} Cloning the repository from $REPO_URL into $TEMP_DIR..."
+# git clone $REPO_URL $TEMP_DIR 2>/dev/null || { echo -e "${RED}[E]${RT} Failed to clone repository."; exit 1; }
 
-# Step 2: Create the shared directory if it doesn't exist
-if [ ! -d "$SHARED_DIR" ]; then
-  echo -e "${CYAN}   ${RT} Creating shared directory at $SHARED_DIR..."
-  sudo mkdir -p $SHARED_DIR || { echo -e "${RED}[E]${RT} Failed to create directory."; exit 1; }
-fi
+# # Step 2: Create the shared directory if it doesn't exist
+# if [ ! -d "$SHARED_DIR" ]; then
+#   echo -e "${CYAN}   ${RT} Creating shared directory at $SHARED_DIR..."
+#   sudo mkdir -p $SHARED_DIR || { echo -e "${RED}[E]${RT} Failed to create directory."; exit 1; }
+# fi
 
-# Step 3: Copy the repository files to the shared directory
-echo -e "${CYAN}   ${RT} Copying repository to $SHARED_DIR..."
-sudo cp -r $TEMP_DIR/* $SHARED_DIR || { echo -e "${RED}[E]${RT} Failed to copy files to $SHARED_DIR."; exit 1; }
+# # Step 3: Copy the repository files to the shared directory
+# echo -e "${CYAN}   ${RT} Copying repository to $SHARED_DIR..."
+# sudo cp -r $TEMP_DIR/* $SHARED_DIR || { echo -e "${RED}[E]${RT} Failed to copy files to $SHARED_DIR."; exit 1; }
 
-# Step 4: Check if the binary exists in modules/main
-if [ ! -f "$SHARED_DIR/modules/main" ]; then
-  echo -e "${RED}[E]${RT} The main binary was not found in $SHARED_DIR/modules. Please ensure it is built correctly."
+sudo mkdir -p $SHARED_DIR
+sudo cp -rf "$(pwd)/." "$SHARED_DIR"
+
+# Step 4: Check if the binary exists in modules/$BIN_RAW
+if [ ! -f "$SHARED_DIR/modules/$BIN_RAW" ]; then
+  echo -e "${RED}[E]${RT} The $BIN_RAW binary was not found in $SHARED_DIR/modules. Please ensure it is built correctly."
   exit 1
 fi
 
 # Step 5: Move the binary to /usr/bin and rename to sysdd
 echo -e "${CYAN}   ${RT} Installing binary as $BIN_NAME to $BIN_DIR..."
-sudo cp $SHARED_DIR/modules/main $BIN_DIR/$BIN_NAME || { echo -e "${RED}[E]${RT} Failed to copy binary to /usr/bin."; exit 1; }
+sudo cp $SHARED_DIR/modules/$BIN_RAW $BIN_DIR/$BIN_NAME || { echo -e "${RED}[E]${RT} Failed to copy binary to /usr/bin."; exit 1; }
 sudo chmod +x $BIN_DIR/$BIN_NAME
 
 sudo sudo cp -Rf static/shortcuts/sysdd.desktop /usr/share/applications/sysdd.desktop
 
-# Step 6: Clean up
-echo -e "${CYAN}   ${RT} Cleaning up temporary files..."
-rm -rf $TEMP_DIR
+# # Step 6: Clean up
+# echo -e "${CYAN}   ${RT} Cleaning up temporary files..."
+# rm -rf $TEMP_DIR
 
 # Step 7. Install dependencies
 sudo apt install -y lolcat > /dev/null 2>&1

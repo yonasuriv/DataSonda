@@ -69,14 +69,14 @@ MODCOR="$INSTALLDIR/modules/functions/core"
 STYLE="$INSTALLDIR/modules/style"
 HELPER="$INSTALLDIR/modules/helper"
 FUNCTIONS="$INSTALLDIR/modules/functions"
-set +x
+
 
 source $STYLE/colors
-#source $HELPER/top
+source $HELPER/top
 
-source $MODCOR/sys_main
+source $MODCOR/logic
+# source $MODCOR/sys_main
 source $MODCOR/sys_check
-source $MODCOR/sys_logic
 source $MODLST/installed_packages
 source $MODHEL/info_networks
 source $MODHEL/info_devices
@@ -88,6 +88,7 @@ source $MODHEL/info_kernel
 source $MODHEL/info_battery
 
 MAN="$HELPER/man"
+set +a
 
 # First check if --save is the only argument
 if [[ "$#" -eq 1 && "$1" == "--save" ]]; then
@@ -97,7 +98,8 @@ if [[ "$#" -eq 1 && "$1" == "--save" ]]; then
     # Run default functions (distro_info and system_info_hostnamectl)
     # RUNwoh "general_system_info"
     # RUNwoh "distro_info"
-    RUNwoh "system_info"
+    # RUNwoh "system_info"
+    source $MODCOR/sys_main
 
 # Otherwise, handle other cases (including --save combined with other arguments)
 else
@@ -115,7 +117,9 @@ fi
 if [[ $# -eq 0 ]]; then
     # RUNwoh "general_system_info"
     # RUNwoh "distro_info"
-    RUNwoh "system_info"
+    # RUNwoh "system_info"
+    system_info
+    source $MODCOR/sys_main
 fi
 
 # Argument handling ${BLUE}(Updated to handle multiple arguments)
@@ -124,6 +128,7 @@ while [[ $# -gt 0 ]]; do
     case $key in
         -net) # EXTERNAL CUSTOM SCRIPT
             python $MODCOR/sys_net.py
+            exit 0
             
             ;;        
         -v)
