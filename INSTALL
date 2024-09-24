@@ -21,8 +21,8 @@ else
 fi
 
 # Step 1: Download the repository
-echo -e "${LB}${CYAN}[#}${RT} Cloning the repository from $REPO_URL into $TEMP_DIR...${LB}"
-git clone $REPO_URL $TEMP_DIR || { echo -e "${RED}[E]${RT} Failed to clone repository."; exit 1; }
+echo -e "${LB}${CYAN}[#}${RT} Cloning the repository from $REPO_URL into $TEMP_DIR..."
+git clone $REPO_URL $TEMP_DIR 2>/dev/null || { echo -e "${RED}[E]${RT} Failed to clone repository."; exit 1; }
 
 # Step 2: Create the shared directory if it doesn't exist
 if [ ! -d "$SHARED_DIR" ]; then
