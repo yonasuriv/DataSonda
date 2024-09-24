@@ -5,7 +5,7 @@ REPO_URL="https://raw.githubusercontent.com/yonasuriv/sonda/refs/heads/main/lib/
 LOCAL_VERSION_FILE="$VERSION/current" 
 
 # Function to check for updates
-version_check() {
+get_version() {
     if [ ! -f "$LOCAL_VERSION_FILE" ]; then
         echo "Local version file not found!"
         exit 1
@@ -34,21 +34,15 @@ version_check() {
 }
 
 # Function to update the repository
-version_update() {
+get_update() {
+    # if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
+    #     echo "Your version is up-to-date!"
+    # else
+    #     echo "Updating repository..."
+    #     cd $INSTALLDIR
+    #     git pull origin main
+    # fi
     echo "Updating repository..."
-    git pull origin main  # Change 'main' to your default branch if necessary
+    cd $INSTALLDIR
+    git pull origin main
 }
-
-# Handle script arguments
-case "$1" in
-    -v)
-        version_check
-        ;;
-    -u)
-        version_update
-        ;;
-    *)
-        echo "Usage: $0 [--version|--update]"
-        exit 1
-        ;;
-esac

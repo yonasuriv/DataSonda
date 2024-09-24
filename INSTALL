@@ -3,31 +3,78 @@
 # SysNet/Sonda installation script
 # Created by @yonasuriv
 
+# Source color definitions
 source lib/includes/colors
 
+# Enable debug mode to print each command
+# set -x
+
 # Define variables
-REPO_URL="https://github.com/yonasuriv/sonda"
-SHARED_DIR="/usr/share/sonda"
-BIN_DIR="/usr/bin"
-BIN_NAME="sonda"
-BIN_LOCALNAME="init"
-BIN_LOCALPATH="$SHARED_DIR/bin/$BIN_LOCALNAME"
+INSTALL_DIR="$HOME/.local/share/sonda"        # Local directory for the installation
+REPO_URL="https://github.com/yonasuriv/sonda" # GitHub repository URL
+USR_SHARE="/usr/share"                        # System-wide shared directory
+USR_BIN="/usr/bin"                            # System-wide bin directory
+BIN_NAME="sonda"                              # Name of the executable binary
+LOCAL_BIN_NAME="init"                         # Local binary name inside the repo
+DESKTOP_FILE="static/shortcuts/sonda.desktop" # Path to the .desktop file inside the repo
+ICON_FILE="static/icons/sonda.png"            # Path to the icon inside the repo
 
 # Ensure the script is run with sudo/root permissions
 if sudo -n true 2>/dev/null; then
     :
 else
-    echo -ne "${LB}${RED}[E]${RT} This script must be run as root. Please enter your "; sudo -v || { echo -e "${RED}[E]${RT} Operation cancelled."; exit 1; }
+    echo -ne "${LB}${RED}[E]${RT} This script must be run as root. Please enter your password: "
+    sudo -v || { echo -e "${RED}[E]${RT} Operation cancelled."; exit 1; }
 fi
 
-sudo mkdir -p $SHARED_DIR
-sudo cp -rf "$(pwd)"/* "$SHARED_DIR"
-sudo cp -r $BIN_LOCALPATH $BIN_DIR/$BIN_NAME || { echo -e "${RED}[E]${RT} Failed to copy binary to /usr/bin."; exit 1; }
-sudo cp -f static/shortcuts/sonda.desktop /usr/share/applications/sonda.desktop
+# Function to handle failure and exit
+fail() {
+    echo -e "${RED}[E]${RT} Installation failed."
+    exit 1
+}
 
-sudo chmod 644 /usr/share/sonda/static/icons/sonda.png
-sudo chmod +x $BIN_DIR/$BIN_NAME
+# Create the installation directory in the user's local share if it doesn't exist
+mkdir -p "$INSTALL_DIR" || fail
 
-sudo apt install -y lolcat inxi > /dev/null 2>&1
+# Copy the current working directory's content to the installation directory
+sudo cp -r "$PWD/." "$INSTALL_DIR" || fail
 
+# Set proper permissions for the install directory (read/write/execute only for the user)
+chmod 700 "$INSTALL_DIR" || fail
+
+# Create a symbolic link to the installation directory in /usr/share (system-wide)
+sudo ln -sf "$INSTALL_DIR" "$USR_SHARE/sonda" || fail
+
+# Ensure the binary exists before creating a symlink
+if [ -f "$INSTALL_DIR/bin/$LOCAL_BIN_NAME" ]; then
+    sudo ln -sf "$INSTALL_DIR/bin/$LOCAL_BIN_NAME" "$USR_BIN/$BIN_NAME" || fail
+    sudo chmod +x "$USR_BIN/$BIN_NAME" || fail
+else
+    echo -e "${RED}[E]${RT} Binary file not found: $INSTALL_DIR/bin/$LOCAL_BIN_NAME"
+    fail
+fi
+
+# Install the .desktop file to make the application available in system menus
+if [ -f "$INSTALL_DIR/$DESKTOP_FILE" ]; then
+    sudo cp -f "$INSTALL_DIR/$DESKTOP_FILE" "/usr/share/applications" || fail
+else
+    echo -e "${RED}[E]${RT} .desktop file not found: $INSTALL_DIR/$DESKTOP_FILE"
+    fail
+fi
+
+# Ensure the icon file has the correct permissions if it exists
+if [ -f "$INSTALL_DIR/$ICON_FILE" ]; then
+    sudo chmod 644 "$INSTALL_DIR/$ICON_FILE" || fail
+else
+    echo -e "${RED}[E]${RT} Icon file not found: $INSTALL_DIR/$ICON_FILE"
+    fail
+fi
+
+# Disable debug mode after the setup phase
+# set +x
+
+# Install additional dependencies quietly
+sudo apt install -y lolcat inxi > /dev/null 2>&1 || fail
+
+# Display installation success message only if all steps completed successfully
 echo -e "${LB}${GREEN} ✔ ${RT} Installation completed. You can now run 'sonda' from the terminal."

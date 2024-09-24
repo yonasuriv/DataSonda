@@ -11,12 +11,7 @@
 #   esac
 # done
 
-# Now check the value of LOCAL
-if [[ "$LOCAL" == "YES" ]]; then
-    INSTALLDIR="$(pwd)"
-else
-    INSTALLDIR="/usr/share/sonda"
-fi
+INSTALLDIR="$HOME/.local/share/sonda"
 
 savelog() {
     # Define a log file to store the output
@@ -80,14 +75,15 @@ COLORS="$INCLUDES/colors"
 LOGIC="$INCLUDES/logic"
 LOGO="$INCLUDES/top"
 
-
 NETINFO="$MODCORE/netinfo"
 SYSINFO="$MODCORE/sysinfo"
 SYSCHECK="$MODCORE/syscheck"
+VERCHECK="$VERSION/check"
 
 source $COLORS 
 source $LOGIC 
 source $LOGO
+source $VERCHECK
 
 source $MODINFO/battery
 source $MODINFO/cpu
@@ -158,11 +154,11 @@ while [[ $# -gt 0 ]]; do
             ;;
 
         --version)
-            source $VERSION/check -v
+            get_version
             shift
             ;;
-        --update)
-            source $VERSION/check -u
+        --update|-u)
+            get_update
             shift
             ;;
 
@@ -177,15 +173,12 @@ while [[ $# -gt 0 ]]; do
             # savelog
             shift
             ;;
-        --help|-h|-H)
+        --help|-h)
             PRINT_USAGE=$(cat "$USAGE")
             echo -e "$PRINT_USAGE"
             exit 0
             ;;
-        --local)
-            INSTALLDIR="."
-            shift
-            ;;
+
         -v)
             VLEVEL="$2"
             if [[ "$VLEVEL" =~ ^[1-8]$ ]]; then
@@ -244,7 +237,7 @@ while [[ $# -gt 0 ]]; do
             LOGRUN "distro_info"
             shift
             ;;
-        --all-short|-all)
+        --all|-ald)
             #LOGRUN "general_system_info" 
             #LOGRUN "distro_info" 
             #LOGRUN "system_hostnamectl"
@@ -265,28 +258,7 @@ while [[ $# -gt 0 ]]; do
             LOGRUN "installed_packages" 
             shift
             ;;
-        --all-detailed|-ald)
-            # LOGRUN "distro_info" 
-            # LOGRUN "system_hostnamectl"
-            # LOGRUN "general_system_info"
-            LOGRUN "system_info"
-            LOGRUN "complete_system_info"
-            LOGRUN "kernel_boot_params"
-            LOGRUN "kernel_modules"
-            LOGRUN "battery_info"
-            LOGRUN "cpu_info"
-            LOGRUN "graphics_info"
-            LOGRUN "memory_info"
-            LOGRUN "detailed_memory_info"
-            LOGRUN "disk_storage_info"
-            LOGRUN "pci_devices"
-            LOGRUN "usb_devices"
-            LOGRUN "network_info"
-            LOGRUN "network_connections"
-            LOGRUN "installed_packages"
-            
-            shift
-            ;;
+
         *)
             echo -e "${LB}${RED}[E]${RT} One or more arguments are invalid. Use $0 --help to see all available commands."
             exit 1
