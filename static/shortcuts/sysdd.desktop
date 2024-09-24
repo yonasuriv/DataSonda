@@ -1,11 +1,10 @@
 [Desktop Entry]
-Name=SysDD
+Name=Sonda
 Encoding=UTF-8
-Exec=sysdd
-Icon=/usr/share/sysdd/static/icons/sysdd.png
+Exec=sonda
+Icon=/usr/share/sonda/static/icons/sonda.png
 StartupNotify=false
 Terminal=true
 Type=Application
-X-Kali-Package=nokt
-Comment=System Info Data Dump (ifconfig + hostnamectl on steroids)
-Path=/usr/bin/sysdd
+Comment=System & Network Sensor, on steroids.
+Path=/usr/bin/sonda
