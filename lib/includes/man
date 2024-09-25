@@ -1,27 +1,30 @@
-Usage: $0 [options]
+
+    Usage: sonda [options]
 
     Options:
 
-        -all             Show all information (long output)
-        -ald             Show all detailed information (very long output)
-
-        -pkgs            Show all installed packages
-
-        -v               Show more system information
-        -vv              Show complete system information
+        -r | --recommends   Check required and recommended system settings
+        -v | --version      Display the version of the Sonda tool
+        -u | --update       Update the Sonda tool to the latest version
         
-        -kernel          Show kernel boot parameters and loaded modules
-        -battery         Show battery information
-        -distro          Show distribution information
-        -cpu             Show CPU information
-        -gpu             Show GPU and graphics information
-        -mem*            Show memory information (requires sudo for detailed memory info)$
-        -disks*          Show disk and storage information (requires sudo for detailed partition info)
-        -devices         Show PCI and USB devices information
-        -networks        Show network interfaces and active connections
+        -s | -sys           Show system information (CPU, memory, devices, etc.)
+        -n | -net           Show network information (interfaces, active connections, etc.)
 
-        -net             ifconfig + ipconfig 2.0 (requires @yonasuriv ipconfig)
+        -G | -sysnet        Combines -s and -n output for both system and network information
 
-        -check           Check required/recommended system dependencies
+        -v <LEVEL>          Set the verbosity level for output (values 1-8, with 1 being minimal and 8 being maximum)
 
-        --save           Save output to log file
+        -all                Show all available system and network information (long output)
+        -ald                Show detailed system and network information (very long output)
+
+        -battery            Show battery status and power information
+        -cpu                Show detailed CPU information
+        -devices            Show information about PCI and USB devices
+        -disks*             Show disk and storage information (requires sudo for detailed partition info)
+        -gpu                Show GPU and graphics card information
+        -kernel             Show kernel boot parameters and loaded modules
+        -memory*            Show memory information (requires sudo for detailed memory usage)
+        -network            Show detailed information about network interfaces and active connections
+        -packages           List all installed packages
+
+        --SAVE              Save the output to a log file (currently disabled)

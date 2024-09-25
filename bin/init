@@ -139,46 +139,42 @@ fi
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        -net|-n)
-            logo_netsonda
-            python $NETINFO
-            exit 0
-            
-            ;;
-        -sys|-s)
+
+        -s|-sys)
             logo_syssonda
             LOGRUN "system_info"
             source $SYSINFO
             exit 0
-            
             ;;
 
-        --version)
+        -n|-net)
+            logo_netsonda
+            python $NETINFO
+            exit 0
+            ;;
+
+        -G|-sysnet)
+            logo_sonda_sysnet_1
+            LOGRUN "system_info"
+            source $SYSINFO
+            python $NETINFOs
+            exit 0
+            ;;
+
+        -v|--version)
             get_version
             shift
             ;;
-        --update|-u)
+        -u|--update)
             get_update
             shift
             ;;
 
-        -check)
+        -r|--recommends)
+            source $SYSCHECK
             LOGRUN "system_recommended"
             exit 0
             ;;
-        --pretty)
-            shift
-            ;;
-        --save)
-            # savelog
-            shift
-            ;;
-        --help|-h)
-            PRINT_USAGE=$(cat "$USAGE")
-            echo -e "$PRINT_USAGE"
-            exit 0
-            ;;
-
         -v)
             VLEVEL="$2"
             if [[ "$VLEVEL" =~ ^[1-8]$ ]]; then
@@ -193,51 +189,65 @@ while [[ $# -gt 0 ]]; do
             shift # past value
             ;;
 
+        --pretty)
+            shift
+            ;;
+
+        --SAVE)
+            # savelog
+            shift
+            ;;
+   
+        -battery)
+            LOGRUN "battery_info"
+            shift
+            ;;
+
         -cpu)
             LOGRUN "cpu_info"
             shift
             ;;
-        -mem)
-            LOGRUN "memory_info"
-            LOGRUN "detailed_memory_info"
-            shift
-            ;;
-        -disks)
-            LOGRUN "disk_storage_info"
-            shift
-            ;;
+
         -devices)
             LOGRUN "pci_devices"
             LOGRUN "usb_devices"
             shift
-            ;;
-        -networks)
-            LOGRUN "network_info"
-            LOGRUN "network_connections"
+            ;;    
+
+        -disks)
+            LOGRUN "disk_storage_info"
             shift
             ;;
+
+        -gpu)
+            LOGRUN "graphics_info"
+            shift
+            ;;
+
         -kernel)
             LOGRUN "kernel_boot_params"
             LOGRUN "kernel_modules"
             shift
             ;;
-        -gpu)
-            LOGRUN "graphics_info"
+
+        -memmory)
+            LOGRUN "memory_info"
+            LOGRUN "detailed_memory_info"
             shift
             ;;
-        -battery)
-            LOGRUN "battery_info"
+
+        -networks)
+            LOGRUN "network_info"
+            LOGRUN "network_connections"
             shift
             ;;
-        -pkgs)
+
+        -packages)
             LOGRUN "installed_packages"
             shift
             ;;
-        -distro)
-            LOGRUN "distro_info"
-            shift
-            ;;
-        --all|-ald)
+
+        --all|--ald)
             #LOGRUN "general_system_info" 
             #LOGRUN "distro_info" 
             #LOGRUN "system_hostnamectl"
@@ -257,6 +267,12 @@ while [[ $# -gt 0 ]]; do
             LOGRUN "network_connections" 
             LOGRUN "installed_packages" 
             shift
+            ;;
+
+        -h|--help)
+            PRINT_USAGE=$(cat "$USAGE")
+            echo -e "$PRINT_USAGE"
+            exit 0
             ;;
 
         *)
