@@ -61,19 +61,6 @@ With real-time terminal notifications, you can keep track of important system ev
 - Easy to extend and customize for specific use cases.
 - Features can be selectively enabled or disabled based on user needs.
 
-## Compatibility
-
-Sonda SysNet is tested and fully functional on the following GNU/Linux distributions:
-
-- **Kali Linux 24.3 Rolling Release**
-
-
-> This in no way means that it doesn't work on other distributions, even less so on those based on Debian.
->
-> It's just that due to lack of time I have not been able to proceed further.
->
-> **Additional distributions will be supported in the future.**
-
 ## Installation
 To install Sonda SysNet, simply clone the repository and run the setup script:
 
@@ -106,17 +93,33 @@ This will provide a comprehensive, real-time overview of your system and network
 > **The following output consists of image copies from a TXT file to prevent revealing unnecessary information due to time constraints.**
 > The tool is visually appealing and will continue to improve over time, adapting to various needs and scenarios.
 
-#### -s argument
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/43277a76-6ba4-477a-8cd3-4d6164588e03"/>
+</p>
+
+## -s Argument
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/1e71d4b6-a201-4db5-811b-4b3db4fd5c71"/>
 </p>
 
-#### -n argument:
+## -n Argument
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/4ae89af0-f96c-42fc-9058-f0a6bfa42163"/>
 </p>
+
+## Compatibility
+
+Sonda SysNet is tested and fully functional on the following GNU/Linux distributions:
+
+- **Kali Linux 24.3 Rolling Release**
+
+> This in no way means that it doesn't work on other distributions, even less so on those based on Debian.
+>
+> It's just that due to lack of time I have not been able to proceed further.
+>
+> **Additional distributions will be supported in the future.**
 
 ## Support
 To contribute or get support, simply fork the repository and submit your issues or pull requests. 
