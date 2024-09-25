@@ -101,6 +101,23 @@ This will provide a comprehensive, real-time overview of your system and network
 
 ----
 
+### Example Command Output
+
+> **The following output consists of image copies from a TXT file to prevent revealing unnecessary information due to time constraints.**
+> The tool is visually appealing and will continue to improve over time, adapting to various needs and scenarios.
+
+#### -s argument
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1e71d4b6-a201-4db5-811b-4b3db4fd5c71"/>
+</p>
+
+#### -n argument:
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/4ae89af0-f96c-42fc-9058-f0a6bfa42163"/>
+</p>
+
 ## Support
 To contribute or get support, simply fork the repository and submit your issues or pull requests. 
 
