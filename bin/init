@@ -109,9 +109,9 @@ if [[ "$#" -eq 1 && "$1" == "--save" ]]; then
     # LOGRUN "general_system_info"
     # LOGRUN "distro_info"
     # LOGRUN "system_info"
-    logo_sonda
-    LOGRUN "system_info"
-    source $SYSINFO
+    # logo_sonda
+    # LOGRUN "system_info"
+    # source $SYSINFO
 
 # Otherwise, handle other cases (including --save combined with other arguments)
 else
@@ -130,9 +130,10 @@ if [[ $# -eq 0 ]]; then
     # LOGRUN "general_system_info"
     # LOGRUN "distro_info"
     # LOGRUN "system_info"
-    logo_sonda
+    logo_sonda_script
     # LOGRUN "system_info"
     # source $SYSINFO
+    :
 fi
 
 # Argument handling ${BLUE}(Updated to handle multiple arguments)
@@ -141,23 +142,25 @@ while [[ $# -gt 0 ]]; do
     case $key in
 
         -s|-sys)
-            logo_syssonda
+            # logo_syssonda
             LOGRUN "system_info"
             source $SYSINFO
             exit 0
             ;;
 
         -n|-net)
-            logo_netsonda
+            # logo_netsonda
             python $NETINFO
             exit 0
             ;;
 
         -G|-sysnet)
-            logo_sonda_sysnet_1
+            logo_sonda_sysnet
+            # logo_sonda_sysnet_1
+            # logo_sonda_illusion
             LOGRUN "system_info"
             source $SYSINFO
-            python $NETINFOs
+            python $NETINFO
             exit 0
             ;;
 
@@ -270,14 +273,16 @@ while [[ $# -gt 0 ]]; do
             ;;
 
         -h|--help)
+            logo_sonda_sysnet
             PRINT_USAGE=$(cat "$USAGE")
             echo -e "$PRINT_USAGE"
             exit 0
             ;;
 
         *)
-            echo -e "${LB}${RED}[E]${RT} One or more arguments are invalid. Use $0 --help to see all available commands."
-            exit 1
+            # echo -e "${LB}${RED}[E]${RT} One or more arguments are invalid. Use sonda --help to see all available commands."
+            # exit 1
+            shift
             ;;
     esac
 done
