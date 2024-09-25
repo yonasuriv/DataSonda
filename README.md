@@ -83,7 +83,7 @@ This will provide a comprehensive, real-time overview of your system and network
 ----
 
 <p align="center"> 
-  <img src="https://github.com/user-attachments/assets/4bc2318c-bd99-4c10-968b-4a1359ed3e31"/>
+  <img src="https://github.com/user-attachments/assets/f44ddefa-5ea9-4a78-b92d-c06f7bff4b8e"/>
 </p>
 
 ----
