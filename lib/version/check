@@ -4,35 +4,41 @@
 REPO_URL="https://raw.githubusercontent.com/yonasuriv/sonda/refs/heads/main/lib/version/current"
 LOCAL_VERSION_FILE="$VERSION/current" 
 
-# Function to check for updates
-get_version() {
+# Get the local version
+LOCAL_VERSION=$(cat "$LOCAL_VERSION_FILE")
+
+# Fetch the remote version from the repository
+REMOTE_VERSION=$(curl -s "$REPO_URL")
+
+check_versions() {
     if [ ! -f "$LOCAL_VERSION_FILE" ]; then
         echo -e "${E} Local version file not found."
         exit 1
     fi
     echo
 
-    # Get the local version
-    LOCAL_VERSION=$(cat "$LOCAL_VERSION_FILE")
-
-    # Fetch the remote version from the repository
-    REMOTE_VERSION=$(curl -s "$REPO_URL")
-
     if [ -z "$REMOTE_VERSION" ]; then
         echo -e "${E} Failed to retrieve remote version."
         exit 1
     fi
+}
+
+# Function to check for updates
+get_version() {
+    check_versions
 
     # Compare versions
     if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
         echo -e "${S} ${BLUE}sonda version${RT} $LOCAL_VERSION ${GREEN2}(running the latest version)${RT}"
     else
-        echo -e "${W} ${BLUE}sonda version${RT} ${YELLOW2}$LOCAL_VERSION${RT} (upgradable to ${CYAN2}$REMOTE_VERSION${RT})"
+        echo -e "${W} ${BLUE}sonda version${RT} ${YELLOW2} $LOCAL_VERSION${RT} (upgradable to ${CYAN2}$REMOTE_VERSION${RT})"
     fi
 }
 
 # Function to update the repository
 get_update() {
+    check_versions
+    
     if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
         echo -e "${S} ${BLUE}sonda version${RT} $LOCAL_VERSION ${GREEN2}(you are running the latest version)${RT}"
     else
