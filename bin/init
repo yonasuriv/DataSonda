@@ -75,8 +75,9 @@ COLORS="$INCLUDES/colors"
 LOGIC="$INCLUDES/logic"
 LOGO="$INCLUDES/top"
 
-NETINFO="$MODCORE/netinfo"
+SYSMENU="$MODCORE/menu"
 SYSINFO="$MODCORE/sysinfo"
+NETINFO="$MODCORE/netinfo"
 SYSCHECK="$MODCORE/syscheck"
 VERCHECK="$VERSION/check"
 
@@ -141,6 +142,12 @@ while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
 
+        -x)
+            # logo_syssonda
+            source $SYSMENU
+            exit 0
+            ;;
+        
         -s|-sys)
             # logo_syssonda
             LOGRUN "system_info"

@@ -1,0 +1,4 @@
+logo_sonda_script
+#####################################################################################
+echo -e "${WHITE2}[#] System Information ${RT}     $net_status $sys_status $restart_recommended $update_recommended${LB}"  ##
+#####################################################################################
