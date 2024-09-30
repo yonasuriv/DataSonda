@@ -175,6 +175,7 @@ while [[ $# -gt 0 ]]; do
             get_version
             shift
             ;;
+
         -u|--update)
             get_update
             shift
@@ -185,6 +186,7 @@ while [[ $# -gt 0 ]]; do
             LOGRUN "system_recommended"
             exit 0
             ;;
+
         -v)
             VLEVEL="$2"
             if [[ "$VLEVEL" =~ ^[1-8]$ ]]; then

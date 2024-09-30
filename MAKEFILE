@@ -71,9 +71,8 @@ install_prompt() {
 
 # Function to handle installation
 install_sonda() {
-    
-
     echo -e "${LB}  +  Starting installation process...${RT}"
+
     # Install additional dependencies quietly
     # echo -e "${LB}  +  Installing dependencies...${RT}"
     sudo apt install -y lolcat inxi > /dev/null 2>&1 || fail
@@ -100,7 +99,13 @@ install_sonda() {
 
     # Create a symbolic link to the installation directory in /usr/share (system-wide)
     echo -e "  +  Creating symbolic link in /usr/share...${RT}"
-    sudo ln -sf "$INSTALL_DIR" "$USR_SHARE/sonda" || fail
+    if [[ "$INSTALL_DIR" == "$USR_SHARE/sonda" ]]; then
+        echo -e "${RED}[E]${RT} Cannot create a symlink to the same directory, as this would cause recursion."
+        fail
+    else
+        sudo ln -sf "$INSTALL_DIR" "$USR_SHARE/sonda" || fail
+        find "$INSTALL_DIR" -maxdepth 1 -type l -exec rm -f {} \;
+    fi
 
     echo -e "  | "
 
@@ -119,6 +124,7 @@ install_sonda() {
     # Install the .desktop file to make the application available in system menus
     echo -e "  +  Installing .desktop file...${RT}"
     if [ -f "$INSTALL_DIR/$DESKTOP_FILE" ]; then
+        sudo mkdir -p "/usr/share/applications"  # Ensure the target directory exists
         sudo cp -f "$INSTALL_DIR/$DESKTOP_FILE" "/usr/share/applications" || fail
     else
         echo -e "${RED}[E]${RT} .desktop file not found: $INSTALL_DIR/$DESKTOP_FILE"
@@ -136,8 +142,75 @@ install_sonda() {
         fail
     fi
 
+    echo -e "  | "
+
+    echo -e "  +  Setting up the Shell...${RT}"
+    echo -e "  | "
+
+    # Get the current username
+    current_user=$(whoami)
+
+    # Define the line to be checked and added
+    sudoers_entry="$current_user ALL=(ALL) NOPASSWD: /usr/bin/apt update"
+
+    # Check if the line already exists in the sudoers file
+    if sudo grep -q "$sudoers_entry" /etc/sudoers; then
+        echo -e "  |  The sudoers entry for $current_user already exists."
+    else
+        echo -e "  |  Adding sudoers entry for $current_user..."
+        
+        # Safely add the entry using visudo
+        echo "$sudoers_entry" | sudo EDITOR='tee -a' visudo
+
+        if [ $? -eq 0 ]; then
+            echo -e "  |  Sudoers entry added successfully."
+        else
+            echo -e "  |  Failed to add sudoers entry."
+        fi
+    fi
+
+    echo -e "  | "
+
+    # Get the current shell
+    current_shell=$(basename "$SHELL")
+
+    # Determine the appropriate startup file based on the shell
+    if [ "$current_shell" = "bash" ]; then
+        shell_rc_file="$HOME/.bashrc"
+    elif [ "$current_shell" = "zsh" ]; then
+        shell_rc_file="$HOME/.zshrc"
+    else
+        echo "Unsupported shell: $current_shell"
+        exit 1
+    fi
+
+    # Check if 'sonda -x' is already present in the shell's rc file
+    if grep -q "sonda -x" "$shell_rc_file"; then
+        echo -e "  |  'sonda -x' is already in $shell_rc_file"
+    else
+        echo -e "  |  Adding 'sonda -x' to $shell_rc_file..."
+        echo "sonda -x" >> "$shell_rc_file"
+
+        if [ $? -eq 0 ]; then
+            echo -e "  |  'sonda -x' added to $shell_rc_file successfully."
+        else
+            echo -e "  |  Failed to add 'sonda -x' to $shell_rc_file."
+            exit 1
+        fi
+    fi
+
     # Display installation success message only if all steps completed successfully
     echo -e "${LB}${GREEN}  ✔  Installation completed. You can now run 'sonda' from the terminal.${RT}"
+
+    # Determine the appropriate startup file based on the shell
+    if [ "$current_shell" = "bash" ]; then
+        bash
+    elif [ "$current_shell" = "zsh" ]; then
+        zsh
+    else
+        echo -e "${E} Unsupported shell: $current_shell"
+        exit 1
+    fi
 }
 
 # Function to handle uninstallation

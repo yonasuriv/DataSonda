@@ -364,7 +364,7 @@ function system_info {
     if [ "$total_pkg_update_count" -eq 0 ]; then
         sys_status="${BLUE2}SYSTEM UP TO DATE${RT}${RT}"
     else
-        sys_status="${PURPLE2}UPDATE AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
+        sys_status="${MAGENTA2}UPDATE AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
     fi 
 
     # REBOOT

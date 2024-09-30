@@ -1,4 +1,62 @@
-logo_sonda_script
+if [ $(find /var/log/apt/history.log -type f -mtime -1 2>/dev/null) ]; then
+    :
+else
+    sudo apt update > /dev/null 2>&1
+fi
+
+
+net_status=$(ping -c 1 1.1.1.1 > /dev/null 2>&1 && echo -e "${GREEN2}${RT}${GREEN}NETWORK CONNECTED${RT}" || echo -e "${RED2}${RT} ${RED}Disconnected${RT}")
+
+# Get number of packages available to be upgraded
+UPGRADABLE=$(apt list --upgradable 2>/dev/null | grep -v "Listing..." | wc -l)
+
+# Get number of security updates available
+SECURITY_UPDATES=$(apt-get -s upgrade | grep "^Inst" | grep -i security | wc -l)
+
+# Format upgradable packages with singular/plural
+if [ "$UPGRADABLE" -gt 1 ]; then
+    upgradable_formatted="$UPGRADABLE packages"
+elif [ "$UPGRADABLE" -eq 1 ]; then
+    upgradable_formatted="$UPGRADABLE package"
+else
+    upgradable_formatted="no packages"
+fi
+
+# Format security updates with singular/plural
+if [ "$SECURITY_UPDATES" -gt 1 ]; then
+    security_updates_formatted="$SECURITY_UPDATES security updates"
+elif [ "$SECURITY_UPDATES" -eq 1 ]; then
+    security_updates_formatted="$SECURITY_UPDATES security update"
+else
+    security_updates_formatted="no security updates"
+fi
+
+# Calculate total updates (upgradable + security)
+total_pkg_update_count=$(($UPGRADABLE + $SECURITY_UPDATES))
+
+if [[ "$total_pkg_update_count" -eq 0 ]]; then
+    sys_status="${BLUE2}SYSTEM UP TO DATE${RT}${RT}"
+else
+    sys_status="${MAGENTA2}UPDATE AVAILABLE${RT}${DIM} ($upgradable_formatted, $security_updates_formatted) ${DIM}${RT}"
+fi 
+
+# REBOOT
+if [[ "$uptime_days" -ge 6 ]]; then
+    restart_recommended=$(echo -e "${RED2}[RESTART RECOMMENDED]${RT}")
+elif [[ "$uptime_days" -gt 3 ]]; then
+    restart_recommended=$(echo -e "${YELLOW2}[RESTART RECOMMENDED]${RT}")
+else
+    restart_recommended=""
+fi
+
+# UPDATE
+if [[ "$DAYS" -ge 15 ]]; then
+    update_recommended=$(echo -e "${RED2}[UPDATE RECOMMENDED] ${RT}")
+elif [[ "$DAYS" -ge 5 ]] && [[ "$DAYS" -le 14 ]]; then
+    update_recommended=$(echo -e "${YELLOW2}[UPDATE RECOMMENDED] ${RT}")
+else
+    update_recommended=""
+fi
 #####################################################################################
-echo -e "${WHITE2}[#] System Information ${RT}     $net_status $sys_status $restart_recommended $update_recommended${LB}"  ##
+printf "${LB}    $(echo -e "[SONDA $(cat $VERSION/current)]" | lolcat -f)" && echo -e " $net_status $sys_status $restart_recommended $update_recommended${LB}"
 #####################################################################################
