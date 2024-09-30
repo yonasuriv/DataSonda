@@ -145,7 +145,7 @@ install_sonda() {
     echo -e "  | "
 
     echo -e "  +  Setting up the Shell...${RT}"
-    echo -e "  | "
+    # echo -e "  | "
 
     # Get the current username
     current_user=$(whoami)
@@ -155,7 +155,7 @@ install_sonda() {
 
     # Check if the line already exists in the sudoers file
     if sudo grep -q "$sudoers_entry" /etc/sudoers; then
-        echo -e "  |  The sudoers entry for $current_user already exists."
+        : # echo -e "  |  The sudoers entry for $current_user already exists."
     else
         echo -e "  |  Adding sudoers entry for $current_user..."
         
@@ -169,7 +169,7 @@ install_sonda() {
         fi
     fi
 
-    echo -e "  | "
+    # echo -e "  | "
 
     # Get the current shell
     current_shell=$(basename "$SHELL")
@@ -186,13 +186,13 @@ install_sonda() {
 
     # Check if 'sonda -x' is already present in the shell's rc file
     if grep -q "sonda -x" "$shell_rc_file"; then
-        echo -e "  |  'sonda -x' is already in $shell_rc_file"
+        : # echo -e "  |  'sonda -x' is already in $shell_rc_file"
     else
         echo -e "  |  Adding 'sonda -x' to $shell_rc_file..."
         echo "sonda -x" >> "$shell_rc_file"
 
         if [ $? -eq 0 ]; then
-            echo -e "  |  'sonda -x' added to $shell_rc_file successfully."
+            echo -e "  |  Sonda added to $shell_rc_file successfully."
         else
             echo -e "  |  Failed to add 'sonda -x' to $shell_rc_file."
             exit 1
@@ -200,7 +200,7 @@ install_sonda() {
     fi
 
     # Display installation success message only if all steps completed successfully
-    echo -e "${LB}${GREEN}  ✔  Installation completed. You can now run 'sonda' from the terminal.${RT}"
+    echo -e "${LB}${NKBRGREEN}  ✔  Installation success.${RT}"
 
     # Determine the appropriate startup file based on the shell
     if [ "$current_shell" = "bash" ]; then
@@ -249,7 +249,7 @@ uninstall_sonda() {
     echo -e "  +  Removing installation directory...${RT}"
     sudo rm -rf "$INSTALL_DIR" || fail
 
-    echo -e "${GREEN}  ✔  Uninstallation completed.${RT}"
+    echo -e "${GREEN}  ✔  Uninstallation success.${RT}"
 }
 
 # Main logic to parse the arguments
