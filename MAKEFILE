@@ -157,10 +157,10 @@ install_sonda() {
     if sudo grep -q "$sudoers_entry" /etc/sudoers; then
         : # echo -e "  |  The sudoers entry for $current_user already exists."
     else
-        echo -e "  |  Adding sudoers entry for $current_user..."
+        # echo -e "  |  Adding sudoers entry for $current_user..."
         
         # Safely add the entry using visudo
-        echo "$sudoers_entry" | sudo EDITOR='tee -a' visudo
+        echo "$sudoers_entry" | sudo EDITOR='tee -a' visudo 2>/dev/null
 
         if [ $? -eq 0 ]; then
             echo -e "  |  Sudoers entry added successfully."
