@@ -1,9 +1,8 @@
-if [ $(find /var/log/apt/history.log -type f -mtime -1 2>/dev/null) ]; then
-    :
-else
-    sudo apt update > /dev/null 2>&1
-fi
-
+# if [ $(find /var/log/apt/history.log -type f -mtime -1 2>/dev/null) ]; then
+#     :
+# else
+#     sudo apt update > /dev/null 2>&1
+# fi
 
 net_status=$(ping -c 1 1.1.1.1 > /dev/null 2>&1 && echo -e "${NKBRGREEN}[NETWORK CONNECTED]${RT}" || echo -e "${NKBRRED}[NO INTERNET]${RT}")
 
