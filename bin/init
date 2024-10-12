@@ -11,11 +11,20 @@
 #   esac
 # done
 
-INSTALLDIR="$HOME/.local/share/sonda"
+# Check if the script is run with sudo
+if [ "$EUID" -eq 0 ]; then
+    # Script is run as root, use the original user's home directory
+    HOMEUSER=$(eval echo "~$SUDO_USER")
+else
+    # Script is not run as root, use the current user's home directory
+    HOMEUSER="$HOME"
+fi
+
+INSTALLDIR="$HOMEUSER/.local/share/sonda"
 
 savelog() {
     # Define a log file to store the output
-    LOGFILE="$HOME/Desktop/system_$(date +%d%m%y).log"
+    LOGFILE="$HOMEUSER/Desktop/system_$(date +%d%m%y).log"
 
     # Clear log file if it already exists
     > $LOGFILE
