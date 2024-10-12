@@ -5,7 +5,7 @@
 # Modified for use as a MAKEFILE with install and uninstall options
 
 # Source color definitions
-source lib/includes/colors
+source lib/includes/style
 
 # Define variables
 INSTALL_DIR="$HOME/.local/share/sonda"        # Local directory for the installation

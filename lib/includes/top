@@ -3,11 +3,15 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 logo_sonda_script() {
-echo -e "${LB}    SONDA v$(cat $VERSION/current) (SysNet release) by @yonasuriv. Type -h to view the complete list of commands." | lolcat
+echo -e "${LB}   DATA SONDA v$(cat $VERSION/current) by @yonasuriv."  | lolcat # This is a fast and lightweight system information. For a more detailed information use -s (system) and -n (network). Type -h to view the complete list of commands."
+echo -e ""
+echo -e " * This is a quick and lightweight system information. "
+echo -e " * For more detailed data, use the options '-s' for system information and '-n' for network details. "
+echo -e " * Type '-h' to see the full list of available commands."
 }
 
 logo_sonda_sysnet() {
-source $STATIC/art/syssonda_wide | lolcat
+source $STATIC/art/syssonda_1 | lolcat
 }
 
 

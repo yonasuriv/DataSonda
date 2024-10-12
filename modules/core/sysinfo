@@ -1,6 +1,7 @@
 #####################################################################################
-echo -e "${WHITE2}[#] System Information ${RT}     $net_status $sys_status ${LB}"  ##
+echo -e "[┬] ${WHITE2}System Information ${RT}     $net_status $sys_status"  ##
 #####################################################################################
+echo -e " |  "
 echo -e "$update_recommended $(calculate_time_since_last_update) since the last system update."
 echo -e " |  "
 echo -e " |  Kernel Version:         $kernel_version_full ($kernel_release)"   
@@ -19,14 +20,15 @@ echo -e " |  RAM:                    $total_memory Total ($available_memory avai
 echo -e " |  Audio:                  $audio_info"
 echo -e " |  Board:                  $board_name ($board_vendor)"
 echo -e " |  Hardware:               $hardware_model ($hardware_vendor)"
-echo -e " |  Firmware:               $full_firmware, release $firmware_date ($firmware_age months old)"
+echo -e " |  Firmware:               $full_firmware, release $firmware_date ($firmware_age old)"
 echo -e " |  System Identifier:      BOOT ID: $boot_id, MACHINE ID: $machine_id${RT}"
 echo -e " |  "
 echo -e "[+] ${NKBRCYAN}$manual_pkgs${RT} packages installed by user, ${NKBRCYAN}$default_pkgs${RT} from OS, ${NKBRCYAN}$total_pkgs${RT} total. ${DIM}Last installed:${RT} $(lastipkgs)${LB}"
 
 #####################################################################################
-echo -e "${WHITE2}[#] System Performance ${RT}    ${LB}"                           ##
+echo -e "[┬] ${WHITE2}System Performance ${RT}"                           ##
 #####################################################################################
+echo -e " |  "
 echo -e "$restart_recommended $formatted_uptime since the last reboot."
 echo -e " |  "
 stats_cpu_mem_disk

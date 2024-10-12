@@ -31,7 +31,7 @@ get_version() {
     if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
         echo -e "${S} ${BLUE}sonda version${RT} $LOCAL_VERSION ${GREEN2}(running the latest version)${RT}"
     else
-        echo -e "${W} ${BLUE}sonda version${RT} ${YELLOW2} $LOCAL_VERSION${RT} (upgradable to ${CYAN2}$REMOTE_VERSION${RT})"
+        echo -e "${W} ${BLUE}sonda version${RT} ${YELLOW2} $LOCAL_VERSION${RT}(upgradable to ${CYAN2}$REMOTE_VERSION${RT})"
     fi
 }
 

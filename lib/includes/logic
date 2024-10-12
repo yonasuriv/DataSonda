@@ -40,7 +40,6 @@ function system_info {
     uptime_minutes=$(awk -v seconds="$uptime_seconds" 'BEGIN {print int((seconds%3600)/60)}')
     formatted_uptime="${uptime_days} days, ${uptime_hours} hours, ${uptime_minutes} minutes"
 
-
     # [+] CATEGORY: Kernel Information
 
     # Fetch kernel name and version
@@ -373,7 +372,7 @@ function system_info {
     elif [[ "$uptime_days" -gt 3 ]]; then
         restart_recommended=$(echo -e "${YELLOW2}[RESTART RECOMMENDED]${RT}")
     else
-        restart_recommended="[*]"
+        restart_recommended="[+]"
     fi
 
     # UPDATE
@@ -382,6 +381,6 @@ function system_info {
     elif [[ "$DAYS" -ge 5 ]] && [[ "$DAYS" -le 14 ]]; then
         update_recommended=$(echo -e "${YELLOW2}[UPDATE RECOMMENDED] ${RT}")
     else
-        update_recommended="[*]"
+        update_recommended="[+]"
     fi
 }

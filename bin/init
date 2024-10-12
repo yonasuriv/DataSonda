@@ -71,7 +71,7 @@ MODCORE="$MODULES/core"
 MODINFO="$MODULES/info"
 
 # FILES
-COLORS="$INCLUDES/colors"
+STYLE="$INCLUDES/style"
 LOGIC="$INCLUDES/logic"
 LOGO="$INCLUDES/top"
 
@@ -81,7 +81,7 @@ NETINFO="$MODCORE/netinfo"
 SYSCHECK="$MODCORE/syscheck"
 VERCHECK="$VERSION/check"
 
-source $COLORS 
+source $STYLE
 source $LOGIC 
 source $LOGO
 source $VERCHECK
@@ -132,6 +132,7 @@ if [[ $# -eq 0 ]]; then
     # LOGRUN "distro_info"
     # LOGRUN "system_info"
     logo_sonda_script
+    modules/core/main
     # LOGRUN "system_info"
     # source $SYSINFO
     :
