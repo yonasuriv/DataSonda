@@ -132,7 +132,7 @@ if [[ $# -eq 0 ]]; then
     # LOGRUN "distro_info"
     # LOGRUN "system_info"
     logo_sonda_script
-    modules/core/main
+    source $MODCORE/main
     # LOGRUN "system_info"
     # source $SYSINFO
     :
