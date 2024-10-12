@@ -11,7 +11,7 @@ echo -e " * Type '-h' to see the full list of available commands."
 }
 
 logo_sonda_sysnet() {
-source $STATIC/art/syssonda_1 | lolcat
+bash $STATIC/art/sonda_sysnet_1 | lolcat
 }
 
 
