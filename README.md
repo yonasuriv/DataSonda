@@ -1,15 +1,15 @@
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/4b989b4a-f449-41f4-b290-d5a573754da2"/>
+  <img src="https://github.com/user-attachments/assets/d3d7ae9e-bb32-4e7b-aa12-ab0acd17fb9e"/><img src="https://github.com/user-attachments/assets/cbffda63-a684-4194-a498-a3cd070cc269"/>
 </p>
 
 ----
 
 ## Description
 
-Sonda SysNet is designed to be a comprehensive utility that combines the features of nearly all system information tools available on Linux. Whether you need details on system uptime, active processes, hardware specifications, network configurations, or package versions, Sonda SysNet brings all this information into a single, easy-to-use interface.
+Data Sonda is designed to be a comprehensive utility that combines the features of nearly all system information tools available on Linux. Whether you need details on system uptime, active processes, hardware specifications, network configurations, or package versions, Data Sonda brings all this information into a single, easy-to-use interface.
 
-With real-time terminal notifications, you can keep track of important system events like package updates, disk space usage, memory allocation, CPU load, and much more. Sonda SysNet is especially useful for system administrators, developers, and power users who need a reliable and fast way to get accurate system details.
+With real-time terminal notifications, you can keep track of important system events like package updates, disk space usage, memory allocation, CPU load, and much more. Data Sonda is especially useful for system administrators, developers, and power users who need a reliable and fast way to get accurate system details.
 
 ----
 
@@ -62,7 +62,7 @@ With real-time terminal notifications, you can keep track of important system ev
 - Features can be selectively enabled or disabled based on user needs.
 
 ## Installation
-To install Sonda SysNet, simply clone the repository and run the setup script:
+To install Data Sonda, simply clone the repository and run the setup script:
 
 ```bash
 git clone https://github.com/yonasuriv/sondasysnet && cd sondasysnet && ./MAKEFILE -i
@@ -70,7 +70,7 @@ git clone https://github.com/yonasuriv/sondasysnet && cd sondasysnet && ./MAKEFI
 
 All requirements and dependencies are handled automatically. To uninstall it run `./MAKEFILE -u`
 
-Once installed, you can run Sonda SysNet from the terminal:
+Once installed, you can run Data Sonda from the terminal:
 
 ```bash
 sonda
@@ -111,7 +111,7 @@ This will provide a comprehensive, real-time overview of your system and network
 
 ## Compatibility
 
-Sonda SysNet is tested and fully functional on the following GNU/Linux distributions:
+Data Sonda is tested and fully functional on the following GNU/Linux distributions:
 
 - **Kali Linux 24.3 Rolling Release**
 
@@ -127,4 +127,4 @@ To contribute or get support, simply fork the repository and submit your issues 
 All forms of contributions are welcome, from bug fixes to new features and OS compatibility testing.
 
 ## License
-Sonda SysNet is open-source software licensed under the MIT License. See the LICENSE file for more details.
+Data Sonda is open-source software licensed under the MIT License. See the LICENSE file for more details.
