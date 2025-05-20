@@ -185,19 +185,19 @@ install_sonda() {
     fi
 
     # Check if 'sonda -x' is already present in the shell's rc file
-    if grep -q "sonda -x" "$shell_rc_file"; then
-        : # echo -e "  |  'sonda -x' is already in $shell_rc_file"
-    else
-        echo -e "  |  Adding 'sonda -x' to $shell_rc_file..."
-        echo "sonda -x" >> "$shell_rc_file"
+    # if grep -q "sonda -x" "$shell_rc_file"; then
+    #     : # echo -e "  |  'sonda -x' is already in $shell_rc_file"
+    # else
+    #     echo -e "  |  Adding 'sonda -x' to $shell_rc_file..."
+    #     echo "sonda -x" >> "$shell_rc_file"
 
-        if [ $? -eq 0 ]; then
-            echo -e "  |  Sonda added to $shell_rc_file successfully."
-        else
-            echo -e "  |  Failed to add 'sonda -x' to $shell_rc_file."
-            exit 1
-        fi
-    fi
+    #     if [ $? -eq 0 ]; then
+    #         echo -e "  |  Sonda added to $shell_rc_file successfully."
+    #     else
+    #         echo -e "  |  Failed to add 'sonda -x' to $shell_rc_file."
+    #         exit 1
+    #     fi
+    # fi
 
     # Display installation success message only if all steps completed successfully
     echo -e "${LB}${NKBRGREEN}  ✔  Installation success.${RT}"

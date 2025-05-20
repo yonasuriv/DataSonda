@@ -54,7 +54,7 @@ def get_ipv6_address():
     if ipv6 == 'Not Detected':
         print(f"\n[-] IPv6 " + color_text(f"     {ipv6}", 'WHITE'))
     else:
-        print(f"\n{Style.BRIGHT}[+] IPv6 {Style.RESET_ALL}" + color_text(f"     {ipv6}", 'RED'))
+        print(f"\n{Style.BRIGHT}[+] IPv6 {Style.RESET_ALL}" + color_text(f"     {ipv6}", 'YELLOW'))
 
 def get_public_ip_info():
     try:
@@ -74,26 +74,68 @@ def get_public_ip_info():
         # Attempt to get the local system's locale setting
         locale.setlocale(locale.LC_ALL, '')  # Set the locale for all categories to the user's default setting (environment)
         local_locale = locale.getlocale()  # Get the current locale setting
-        
-        # Basic check to see if the hostname suggests a VPN or hosting provider
+
+        # Common VPN/Hosting/Cloud indicators
         vpn_indicators = [
-                        'vpn', 'vps', 'hosting', 
-                        'Cisco',  'AnyConnect', 'Palo',  'Alto', 'Networks', 'GlobalProtect', 
-                        'Fortinet', 'FortiClient', 'Pulse',  'Secure', 
-                        'Check Point', 'Juniper', 
-                        'SonicWall', 'Global', 'OpenVPN', 'F5 Networks BIG-IP APM', 
-                        'Citrix', 'NetScaler','Microsoft', 'Azure', 'Gateway', 
-                        'NordVPN', 'ExpressVPN', 'CyberGhost', 
-                        'Private', 'PIA', 'Access', 'Surfshark', 
-                        'Hotspot Shield', 'TunnelBear', 'IPVanish', 
-                        'Proton', 'Windscribe'
-                        ]
+            'VPN', 'VPS', 'Hosting', 'Colo', 'Datacenter', 'DC', 'Server',
+            'Amazon', 'AWS', 'Azure', 'GCP', 'Google', 'Microsoft',
+            'DigitalOcean', 'Linode', 'OVH', 'Hetzner', 'Contabo', 'Oracle',
+            'Netcup', 'UpCloud', 'Vultr', 'Scaleway', 'Kamatera', 'IBMCloud',
+            'Fortinet', 'Cisco', 'Juniper', 'Palo', 'Alto', 'GlobalProtect', 'AnyConnect',
+            'SonicWall', 'Checkpoint', 'Citrix', 'NetScaler', 'F5', 'BIG-IP',
+            'NordVPN', 'ExpressVPN', 'Surfshark', 'ProtonVPN', 'IPVanish', 'TunnelBear',
+            'PIA', 'PrivateInternetAccess', 'Windscribe', 'CyberGhost', 'Hotspot'
+        ]
 
-        is_vpn_external = any(indicator in hostname.lower() for indicator in vpn_indicators)
-        # Additional heuristic for VPN detection based on region mismatch
-        is_vpn_internal = region not in local_locale
 
-        print(f"{Style.BRIGHT}[+] IPv4 {Style.RESET_ALL}" + color_text(f"     {ipv4}", 'YELLOW'))
+        # Check hostname or ISP name for VPN/Cloud hints
+        def tokenize(s):
+            return set(re.findall(r'\w+', s.lower())) if isinstance(s, str) else set()
+        
+        vpn_indicators_lower = {i.lower() for i in vpn_indicators}
+        
+        normalized_isp = isp.lower()
+        normalized_hostname = hostname.lower()
+
+        # Avoid false positives from ultra-short keywords like "dc", "a", "s", etc.
+        safe_indicators = [i.lower() for i in vpn_indicators if len(i) >= 4]
+
+        def get_word_tokens(text):
+            return set(re.findall(r'\b\w+\b', text.lower())) if isinstance(text, str) else set()
+
+        isp_words = get_word_tokens(isp)
+        hostname_words = get_word_tokens(hostname)
+        safe_indicators = {i.lower() for i in vpn_indicators if len(i) >= 4}
+
+        is_vpn_isp = bool(safe_indicators.intersection(isp_words))
+        is_vpn_hostname = bool(safe_indicators.intersection(hostname_words))
+
+        # Optional: compare region with local system locale (e.g. timezone or lang)
+        local_lang = local_locale[0] if local_locale and isinstance(local_locale, tuple) else ''
+        is_region_mismatch = region and local_lang and region.lower() not in local_lang.lower()
+
+        if is_vpn_hostname or is_vpn_isp:
+            # Strong match → GREEN
+            print(f"{Style.BRIGHT}[+] IPv4 {Style.RESET_ALL}" + color_text(f"     {ipv4}", 'GREEN') + f" {Style.DIM}(Connected to VPN){Style.RESET_ALL}\n")
+
+            if is_vpn_hostname:
+                print(f" |  {Style.DIM}Reason    Hostname matches known VPN/provider")
+            if is_vpn_isp:
+                print(f" |  {Style.DIM}Reason    ISP matches known VPN/cloud")
+            if is_region_mismatch:
+                print(f" |  {Style.DIM}Reason    Region mismatch with system locale")
+
+        elif is_region_mismatch:
+            # Weak match → YELLOW
+            print(f"{Style.BRIGHT}[+] IPv4 {Style.RESET_ALL}" + color_text(f"     {ipv4}", 'YELLOW') + f" {Style.DIM}(Public IP may be exposed){Style.RESET_ALL}\n")
+            print(f" |  {Style.DIM}Reason    No known VPN indicators found")
+            print(f" |  {Style.DIM}Reason    Region mismatch with system locale")
+
+        else:
+            # No match → RED
+            print(f"{Style.BRIGHT}[+] IPv4 {Style.RESET_ALL}" + color_text(f"     {ipv4}", 'RED') + f" {Style.DIM}(No VPN detected){Style.RESET_ALL}\n")
+
+
         get_ipv6_address()
         print(f"    ")
         print(f" |  {Style.DIM}INTRNSP{Style.RESET_ALL}   {isp}")
@@ -256,51 +298,37 @@ def print_network_info():
         #     print(f"  |  {Style.DIM}GATEWAY   {gateway}{Style.RESET_ALL}")
         #     print(f"  |  {Style.DIM}NETMASK   {netmask}{Style.RESET_ALL}")
 
-        for iface, ip, mac, subnet, netmask, gateway in vpn_interfaces:
-            print(f"\n{Style.BRIGHT}[+] VPN {Style.RESET_ALL}      {color_text(iface, 'GREEN')}")
-            print(f"  ")
-            print(f" |  {Style.DIM}MACAD{Style.RESET_ALL}     {color_text(mac, 'BLUE')}")
-            print(f" |  {Style.DIM}IPADD{Style.RESET_ALL}     {color_text(ip, 'CYAN')}")
-            print(f" |  {Style.DIM}SUBNET    {subnet}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}GATEWAY   {gateway}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}NETMASK   {netmask}{Style.RESET_ALL}")
+        # Interface type → label map
+        interface_labels = {
+            "tailscale0": ("TUNNEL", "Tailscale VPN"),
+            "vmnet0": ("BRIDGE", "VMware bridged network"),
+            "vmnet1": ("BRIDGE", "VMware Host-only"),
+            "vmnet8": ("BRIDGE", "VMware NAT network"),
+            "virbr0": ("BRIDGE", "libvirt (KVM) NAT bridge"),
+            "wlan0": ("ETHERNET", "Wi-Fi adapter"),
+            "eth0": ("ETHERNET", "Main Ethernet"),
+            "eth1": ("ETHERNET", "Secondary Ethernet"),
+            "lo": ("OTHER", "Loopback interface"),
+        }
 
-        for iface, ip, mac, subnet, netmask, gateway in ethernet_interfaces:
-            print(f"\n{Style.BRIGHT}[+] ETHERNET {Style.RESET_ALL} {color_text(iface, 'LIGHTGREEN_EX')}")
-            print(f"  ")
-            print(f" |  {Style.DIM}MACAD{Style.RESET_ALL}     {color_text(mac, 'BLUE')}")
-            print(f" |  {Style.DIM}IPADD{Style.RESET_ALL}     {color_text(ip, 'CYAN')}")
-            print(f" |  {Style.DIM}SUBNET    {subnet}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}GATEWAY   {gateway}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}NETMASK   {netmask}{Style.RESET_ALL}")
+        # Use this method to format each group dynamically
+        def print_interface_block(group_name, iface_list, color):
+            for iface, ip, mac, subnet, netmask, gateway in iface_list:
+                label, desc = interface_labels.get(iface, (group_name.upper(), ""))
+                print(f"\n{Style.BRIGHT}[+] {label:<9}{Style.RESET_ALL} {color_text(iface, color)} {Style.DIM} ({desc}){Style.RESET_ALL}")
+                print(f" |  {Style.DIM}MACAD{Style.RESET_ALL}     {color_text(mac, 'BLUE')}")
+                print(f" |  {Style.DIM}IPADD{Style.RESET_ALL}     {color_text(ip, 'CYAN')}")
+                print(f" |  {Style.DIM}SUBNET    {subnet}{Style.RESET_ALL}")
+                print(f" |  {Style.DIM}GATEWAY   {gateway}{Style.RESET_ALL}")
+                #print(f" |  {Style.DIM}NETMASK   {netmask}{Style.RESET_ALL}")
 
-        for iface, ip, mac, subnet, netmask, gateway in bridge_interfaces:
-            print(f"\n{Style.BRIGHT}[+] BRIDGE {Style.RESET_ALL}   {color_text(iface, 'MAGENTA')}")
-            print(f"  ")
-            print(f" |  {Style.DIM}MACAD{Style.RESET_ALL}     {color_text(mac, 'BLUE')}")
-            print(f" |  {Style.DIM}IPADD{Style.RESET_ALL}     {color_text(ip, 'CYAN')}")
-            print(f" |  {Style.DIM}SUBNET    {subnet}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}GATEWAY   {gateway}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}NETMASK   {netmask}{Style.RESET_ALL}")
+        # Call grouped output
+        print_interface_block("vpn", vpn_interfaces, 'GREEN')
+        print_interface_block("ethernet", ethernet_interfaces, 'LIGHTGREEN_EX')
+        print_interface_block("bridge", bridge_interfaces, 'MAGENTA')
+        print_interface_block("docker", docker_interfaces, 'MAGENTA')
+        print_interface_block("other", other_connections, 'RED')
 
-        for iface, ip, mac, subnet, netmask, gateway in docker_interfaces:
-            print(f"\n{Style.BRIGHT}[+] DOCKER {Style.RESET_ALL}   {color_text(iface, 'MAGENTA')}")
-            print(f"  ")
-            print(f" |  {Style.DIM}MACAD{Style.RESET_ALL}     {color_text(mac, 'BLUE')}")
-            print(f" |  {Style.DIM}IPADD{Style.RESET_ALL}     {color_text(ip, 'CYAN')}")
-            print(f" |  {Style.DIM}SUBNET    {subnet}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}GATEWAY   {gateway}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}NETMASK   {netmask}{Style.RESET_ALL}")
-
-        # Print other connections last
-        for iface, ip, mac, subnet, netmask, gateway in other_connections:
-            print(f"\n{Style.BRIGHT}[+] OTHER {Style.RESET_ALL}    {color_text(iface, 'RED')}")
-            print(f"  ")
-            print(f" |  {Style.DIM}MACAD{Style.RESET_ALL}     {color_text(mac, 'BLUE')}")
-            print(f" |  {Style.DIM}IPADD{Style.RESET_ALL}     {color_text(ip, 'CYAN')}")
-            print(f" |  {Style.DIM}SUBNET    {subnet}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}GATEWAY   {gateway}{Style.RESET_ALL}")
-            print(f" |  {Style.DIM}NETMASK   {netmask}{Style.RESET_ALL}")
 
     elif os_system == "Windows":
         print(result.stdout)
