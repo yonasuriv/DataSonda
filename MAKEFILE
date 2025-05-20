@@ -200,7 +200,7 @@ install_sonda() {
     # fi
 
     # Display installation success message only if all steps completed successfully
-    echo -e "${LB}${NKBRGREEN}  ✔  Installation success.${RT}"
+    echo -e "${LB}${NKBRGREEN}  ✔  Installation success.${RT}${LB}"
 
     # Determine the appropriate startup file based on the shell
     if [ "$current_shell" = "bash" ]; then
@@ -249,7 +249,7 @@ uninstall_sonda() {
     echo -e "  +  Removing installation directory...${RT}"
     sudo rm -rf "$INSTALL_DIR" || fail
 
-    echo -e "${GREEN}  ✔  Uninstallation success.${RT}"
+    echo -e "${GREEN}  ✔  Uninstallation complete.${RT}"
 }
 
 # Main logic to parse the arguments

@@ -119,17 +119,17 @@ def get_public_ip_info():
             print(f"{Style.BRIGHT}[+] IPv4 {Style.RESET_ALL}" + color_text(f"     {ipv4}", 'GREEN') + f" {Style.DIM}(Connected to VPN){Style.RESET_ALL}\n")
 
             if is_vpn_hostname:
-                print(f" |  {Style.DIM}Reason    Hostname matches known VPN/provider")
+                print(f" |  {Style.DIM}          Hostname matches known VPN/provider")
             if is_vpn_isp:
-                print(f" |  {Style.DIM}Reason    ISP matches known VPN/cloud")
+                print(f" |  {Style.DIM}          ISP matches known VPN/cloud")
             if is_region_mismatch:
-                print(f" |  {Style.DIM}Reason    Region mismatch with system locale")
+                print(f" |  {Style.DIM}          Region mismatch with system locale")
 
         elif is_region_mismatch:
             # Weak match → YELLOW
             print(f"{Style.BRIGHT}[+] IPv4 {Style.RESET_ALL}" + color_text(f"     {ipv4}", 'YELLOW') + f" {Style.DIM}(Public IP may be exposed){Style.RESET_ALL}\n")
-            print(f" |  {Style.DIM}Reason    No known VPN indicators found")
-            print(f" |  {Style.DIM}Reason    Region mismatch with system locale")
+            print(f" |  {Style.DIM}          No known VPN indicators found")
+            print(f" |  {Style.DIM}          Region mismatch with system locale")
 
         else:
             # No match → RED
