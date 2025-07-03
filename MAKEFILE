@@ -37,20 +37,18 @@ install_prompt() {
     # Define proper nouns based on action
     if [[ "$action" == "install" ]]; then
         action_msg="install"
-        initializing_msg="Initializing installation..."
     elif [[ "$action" == "uninstall" ]]; then
         action_msg="uninstall"
-        initializing_msg="Initializing uninstallation..."
     else
         echo -e "${RED}[E] Invalid action. Only 'install' or 'uninstall' are allowed.${RT}"
         exit 1
     fi
 
     # Display prompt
-    echo -e "${LB}${W} You are about to ${NKYELLOW}${action_msg}${RT} ${NKYELLOW}sonda${RT}"
+    echo -e "${LB} ${W} You are about to ${NKYELLOW}${action_msg}${RT} ${NKYELLOW}sonda${RT}\n"
     
     # Prompt for user confirmation
-    read -p "   Continue? [Y/n]: " answer
+    read -p "     Continue? [Y/n]: " answer
     echo -e "\033[A\033[K\033[A\033[K" # Move up 2 spaces and delete them (removes the prompt)
 
     # Default to "yes" if the input is empty
@@ -60,7 +58,6 @@ install_prompt() {
 
     # Check the user's response
     if [[ "$answer" == [yY] ]]; then
-        echo -e "${L} ${initializing_msg}${RT}"
         sleep 1
     else
         echo -e "${E} ${action_msg^} cancelled."  # Capitalize first letter of the action (Install/Uninstall)
@@ -249,7 +246,7 @@ uninstall_sonda() {
     echo -e "  +  Removing installation directory...${RT}"
     sudo rm -rf "$INSTALL_DIR" || fail
 
-    echo -e "${GREEN}  ✔  Uninstallation complete.${RT}"
+    echo -e "\n${GREEN}  ✔  Uninstallation complete.${RT}"
 }
 
 # Main logic to parse the arguments

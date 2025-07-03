@@ -315,7 +315,7 @@ def print_network_info():
         def print_interface_block(group_name, iface_list, color):
             for iface, ip, mac, subnet, netmask, gateway in iface_list:
                 label, desc = interface_labels.get(iface, (group_name.upper(), ""))
-                print(f"\n{Style.BRIGHT}[+] {label:<9}{Style.RESET_ALL} {color_text(iface, color)} {Style.DIM} ({desc}){Style.RESET_ALL}")
+                print(f"\n{Style.BRIGHT}[+] {label:<9}{Style.RESET_ALL} {color_text(iface, color)} {Style.DIM} ({desc}){Style.RESET_ALL}\n")
                 print(f" |  {Style.DIM}MACAD{Style.RESET_ALL}     {color_text(mac, 'BLUE')}")
                 print(f" |  {Style.DIM}IPADD{Style.RESET_ALL}     {color_text(ip, 'CYAN')}")
                 print(f" |  {Style.DIM}SUBNET    {subnet}{Style.RESET_ALL}")
@@ -367,11 +367,12 @@ if __name__ == "__main__":
     if args.flush:
         flush_network()
     else:
-        print(f"\n{Back.WHITE}{Fore.BLACK}[#] External IP Address Information {Style.RESET_ALL}\n")
-        #print(color_text(f"\n External IP Address Information\n", 'CYAN'))
-        get_public_ip_info()
         print(f"\n{Back.WHITE}{Fore.BLACK}[#] Internal IP Address Information {Style.RESET_ALL}")
         #print(color_text(f"\n Internal IP Address Information\n", 'CYAN'))
         print_network_info()
+        print(f"\n{Back.WHITE}{Fore.BLACK}[#] External IP Address Information {Style.RESET_ALL}\n")
+        #print(color_text(f"\n External IP Address Information\n", 'CYAN'))
+        get_public_ip_info()
+        
         
         
