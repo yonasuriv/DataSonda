@@ -65,10 +65,10 @@ With real-time terminal notifications, you can keep track of important system ev
 To install Data Sonda, simply clone the repository and run the setup script:
 
 ```bash
-git clone https://github.com/yonasuriv/sondasysnet && cd sondasysnet && ./MAKEFILE -i
+git clone https://github.com/yonasuriv/sonda && cd sonda && ./SETUP -i
 ```
 
-All requirements and dependencies are handled automatically. To uninstall it run `./MAKEFILE -u`
+All requirements and dependencies are handled automatically. To uninstall it run `./SETUP -u`
 
 Once installed, you can run Data Sonda from the terminal:
 
