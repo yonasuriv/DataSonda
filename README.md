@@ -7,7 +7,7 @@
 
 ----
 
-Sonda is a no-nonsense tool I built to pull together basically everything you’d want from a system info utility on Linux. Uptime, running processes, hardware stats, network configs, package versions — instead of juggling a bunch of separate tools, Sonda gives it all to you in one spot.
+Sonda is a no-nonsense tool I built to pull together basically everything you’d want from a system info utility on Linux. Uptime, running processes, hardware stats, network configs, package versions — instead of juggling a bunch of separate tools, sonda gives it all to you in one spot.
 
 It also pushes real-time updates straight to your terminal — things like package installs, disk usage, memory pressure, CPU spikes, etc. Handy if you're keeping an eye on performance or troubleshooting something live without the fluff.
 
@@ -92,22 +92,15 @@ This will provide a comprehensive, real-time overview of your system and network
   <img src="https://github.com/user-attachments/assets/f44ddefa-5ea9-4a78-b92d-c06f7bff4b8e"/>
 </p>
 
-### Example Command Output
+## Flags
 
-> **The following output consists of image copies from a TXT file to prevent revealing unnecessary information due to time constraints.**
-> The tool is visually appealing and will continue to improve over time, adapting to various needs and scenarios.
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/43277a76-6ba4-477a-8cd3-4d6164588e03"/>
-</p>
-
-## -s Argument
+### `-s` Argument
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/1e71d4b6-a201-4db5-811b-4b3db4fd5c71"/>
 </p>
 
-## -n Argument
+### `-n` Argument
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/4ae89af0-f96c-42fc-9058-f0a6bfa42163"/>
