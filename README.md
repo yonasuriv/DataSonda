@@ -1,11 +1,11 @@
+----
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b7002b57-9a0a-44ab-9de3-fef44fb56ce0e"/><img src="https://github.com/user-attachments/assets/4e9cad6d-c134-44b1-9bd7-6f0b78b8a41a"/>
+  <!--<img src="https://github.com/user-attachments/assets/b7002b57-9a0a-44ab-9de3-fef44fb56ce0e"/><img src="https://github.com/user-attachments/assets/4e9cad6d-c134-44b1-9bd7-6f0b78b8a41a"/>-->
+  <img width="825" height="108" alt="text-1752496235457" src="https://github.com/user-attachments/assets/6e072117-94d2-496e-8710-b140ce7c23da" />
 </p>
 
 ----
-
-## Description
 
 Data Sonda is designed to be a comprehensive utility that combines the features of nearly all system information tools available on Linux. Whether you need details on system uptime, active processes, hardware specifications, network configurations, or package versions, Data Sonda brings all this information into a single, easy-to-use interface.
 
