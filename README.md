@@ -7,62 +7,70 @@
 
 ----
 
-Data Sonda is designed to be a comprehensive utility that combines the features of nearly all system information tools available on Linux. Whether you need details on system uptime, active processes, hardware specifications, network configurations, or package versions, Data Sonda brings all this information into a single, easy-to-use interface.
+Sonda is a no-nonsense tool I built to pull together basically everything you’d want from a system info utility on Linux. Uptime, running processes, hardware stats, network configs, package versions — instead of juggling a bunch of separate tools, Sonda gives it all to you in one spot.
 
-With real-time terminal notifications, you can keep track of important system events like package updates, disk space usage, memory allocation, CPU load, and much more. Data Sonda is especially useful for system administrators, developers, and power users who need a reliable and fast way to get accurate system details.
+It also pushes real-time updates straight to your terminal — things like package installs, disk usage, memory pressure, CPU spikes, etc. Handy if you're keeping an eye on performance or troubleshooting something live without the fluff.
 
-----
 
-## Features
 
-**Comprehensive System Information**: 
-- Hardware specifications, CPU, RAM, storage devices, and more.
-- Detailed system uptime and load averages.
-- Live monitoring of system resources (CPU usage, memory, disk space).
+## Coverage
 
-**Network Details**: 
-- Displays network interfaces, IP addresses, routing information, and active connections.
-- Current IP addresses (local and public), MAC addresses, and more.
-- Active network connections, listening ports, and firewall status.
-- Network interface details and traffic statistics.
+- [x] **System Info**
 
-**Package Management**: 
+  - Pulls CPU, RAM, storage, and full hardware specs
+  - Shows uptime, load averages, and resource pressure in real time
+  - Keeps tabs on memory, disk, and CPU usage while you work
 
-- Live tracking of installed packages and available updates.
-- Notifications for package updates, both system-wide and user-specific.
-- List of installed and pending packages with details on version numbers.
+- [x] **Network Details**
 
-**Live Notifications**: 
-- Live updates displayed directly in the terminal.
-- Notifications for package installations, system events, or changes in network status.
+  - Shows all interfaces, IPs (local + public), MACs, and routes
+  - Lists open ports, active connections, and firewall status
+  - Tracks traffic stats and per-interface info in real time
 
-**System Health Monitoring**: 
-- Tracks CPU usage, memory consumption, disk space, and system uptime.
+- [x] **Package Management**
 
-**Process Management**: 
-- Displays all running processes, allowing you to monitor resource usage in real-time.
+  - Monitors installed packages and available updates live
+  - Sends alerts when packages are added/updated — system or user
+  - Gives you full version history on everything installed or pending
 
-**Real-Time Resource Monitoring**: 
-- Monitors system performance, including CPU, memory, and network usage.
+- [x] **Live Notifications**
 
-**Easy-to-Use Interface**: 
-- Clear, terminal-friendly interface that presents detailed information in a concise format.
-  
-**Comprehensive Output**:
+  - Real-time alerts right in your terminal — no bloat, no GUI
+  - Covers system changes, network status, package installs, and more
 
-- Outputs detailed and readable information for both system administrators and users.
-- Optionally logs data for future analysis.
+- [x] **System Health**
 
-**OS Integration**:
+  - Watches CPU, memory, disk space, and uptime 24/7
 
-- Seamlessly integrates with system services like systemd to provide a full picture of the system’s status.
+- [x] **Process Viewer**
 
-**Modular Design**: 
-- Easy to extend and customize for specific use cases.
-- Features can be selectively enabled or disabled based on user needs.
+  - Displays all running processes and what they’re doing
+  - Lets you catch memory hogs or zombie tasks instantly
+
+- [x] **Real-Time Monitoring**
+
+  - Constantly tracks CPU, RAM, disk, and network performance
+- [x] **Clean Interface**
+
+  - Everything is readable and sorted — made for the terminal
+  - No fluff, just straight data, formatted for humans
+
+- [ ] **Output & Logging** _`disabled temp.`_
+
+  - Easy to skim or deep dive
+  - Can log to file for later review or automation
+
+- [x] **OS Integration**
+
+  - Hooks into systemd and other core services for better insight
+
+- [x] **Modular Setup**
+
+  - Only enable the parts you care about
+  - Easy to extend if you’ve got custom needs
 
 ## Installation
-To install Data Sonda, simply clone the repository and run the setup script:
+To install Sonda, simply clone the repository and run the setup script:
 
 ```bash
 git clone https://github.com/yonasuriv/sonda && cd sonda && ./SETUP -i
@@ -70,7 +78,7 @@ git clone https://github.com/yonasuriv/sonda && cd sonda && ./SETUP -i
 
 All requirements and dependencies are handled automatically. To uninstall it run `./SETUP -u`
 
-Once installed, you can run Data Sonda from the terminal:
+Once installed, you can run Sonda from the terminal:
 
 ```bash
 sonda
@@ -80,13 +88,9 @@ This will provide a comprehensive, real-time overview of your system and network
 
 ## Usage
 
-----
-
 <p align="center"> 
   <img src="https://github.com/user-attachments/assets/f44ddefa-5ea9-4a78-b92d-c06f7bff4b8e"/>
 </p>
-
-----
 
 ### Example Command Output
 
@@ -111,15 +115,7 @@ This will provide a comprehensive, real-time overview of your system and network
 
 ## Compatibility
 
-Data Sonda is tested and fully functional on the following GNU/Linux distributions:
-
-- **Kali Linux 24.3 Rolling Release**
-
-> This in no way means that it doesn't work on other distributions, even less so on those based on Debian.
->
-> It's just that due to lack of time I have not been able to proceed further.
->
-> **Additional distributions will be supported in the future.**
+Tested and fully functional on Kali linux, but should be fully compatible with all debian-based GNU/Linux distributions. Will add a requirements.txt or deps handler later.
 
 ## Support
 To contribute or get support, simply fork the repository and submit your issues or pull requests. 
@@ -127,4 +123,4 @@ To contribute or get support, simply fork the repository and submit your issues 
 All forms of contributions are welcome, from bug fixes to new features and OS compatibility testing.
 
 ## License
-Data Sonda is open-source software licensed under the MIT License. See the LICENSE file for more details.
+Sonda is open-source software licensed under the MIT License. See the LICENSE file for more details.
