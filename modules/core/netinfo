@@ -78,13 +78,13 @@ def get_public_ip_info():
         # Common VPN/Hosting/Cloud indicators
         vpn_indicators = [
             'VPN', 'VPS', 'Hosting', 'Colo', 'Datacenter', 'DC', 'Server',
-            'Amazon', 'AWS', 'Azure', 'GCP', 'Google', 'Microsoft',
+            'Amazon', 'AWS', 'Azure', 'GCP', 'Google', 'Microsoft', 'Tailscale',
             'DigitalOcean', 'Linode', 'OVH', 'Hetzner', 'Contabo', 'Oracle',
             'Netcup', 'UpCloud', 'Vultr', 'Scaleway', 'Kamatera', 'IBMCloud',
             'Fortinet', 'Cisco', 'Juniper', 'Palo', 'Alto', 'GlobalProtect', 'AnyConnect',
             'SonicWall', 'Checkpoint', 'Citrix', 'NetScaler', 'F5', 'BIG-IP',
             'NordVPN', 'ExpressVPN', 'Surfshark', 'ProtonVPN', 'IPVanish', 'TunnelBear',
-            'PIA', 'PrivateInternetAccess', 'Windscribe', 'CyberGhost', 'Hotspot'
+            'PIA', 'PrivateInternetAccess', 'Windscribe', 'CyberGhost', 'Hotspot', 'Datacamp', 'Datapacket'
         ]
 
 
